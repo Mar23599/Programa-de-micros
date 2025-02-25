@@ -1,0 +1,38 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.8</VERSION>
+ <DEVICE>"ATmega328P"</DEVICE>
+ <WORKING_DIR>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc</FILE>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\Debug\Laboratorio-2.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>Laboratorio-2.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>Laboratorio-2.map</FILE>
+  <FILE>Laboratorio-2.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <table7seg><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>31</LINE></table7seg>
+  <SETUP><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>43</LINE></SETUP>
+  <LOOP><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>73</LINE></LOOP>
+  <DISPLAY_COUNTER><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>84</LINE></DISPLAY_COUNTER>
+  <check_pb><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>93</LINE></check_pb>
+  <contador_OUT><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>132</LINE></contador_OUT>
+  <incrementar><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>104</LINE></incrementar>
+  <decrementar><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>113</LINE></decrementar>
+  <set_15><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>126</LINE></set_15>
+  <RETORNO><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>177</LINE></RETORNO>
+  <PRINT><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 2\Laboratorio-2\Laboratorio-2\main.asm</FILE><LINE>171</LINE></PRINT>
+ </LABELS>
+</ASSEMBLER_INFO>

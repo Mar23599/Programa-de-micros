@@ -1,0 +1,43 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.8</VERSION>
+ <DEVICE>"ATmega328P"</DEVICE>
+ <WORKING_DIR>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc</FILE>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\Debug\POSTLAB1.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>POSTLAB1.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>POSTLAB1.map</FILE>
+  <FILE>POSTLAB1.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <setup><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>33</LINE></setup>
+  <loop><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>59</LINE></loop>
+  <check_suma1><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>73</LINE></check_suma1>
+  <check_resta1><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>87</LINE></check_resta1>
+  <check_suma2><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>104</LINE></check_suma2>
+  <check_resta2><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>120</LINE></check_resta2>
+  <check_SumaTotal><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>150</LINE></check_SumaTotal>
+  <delay><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>178</LINE></delay>
+  <PRINT><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>136</LINE></PRINT>
+  <wait1><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>82</LINE></wait1>
+  <wait2><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>97</LINE></wait2>
+  <wait3><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>115</LINE></wait3>
+  <wait4><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>130</LINE></wait4>
+  <PRINT_SUMA><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>167</LINE></PRINT_SUMA>
+  <wait5><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>161</LINE></wait5>
+  <subdelay><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\POSTLAB1\POSTLAB1\main.asm</FILE><LINE>185</LINE></subdelay>
+ </LABELS>
+</ASSEMBLER_INFO>

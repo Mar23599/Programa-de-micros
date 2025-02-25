@@ -1,0 +1,36 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.8</VERSION>
+ <DEVICE>"ATmega328P"</DEVICE>
+ <WORKING_DIR>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc</FILE>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328pdef.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\Debug\lab 3.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>lab 3.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>lab 3.map</FILE>
+  <FILE>lab 3.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <setup><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>39</LINE></setup>
+  <ISR_PCINT0><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>128</LINE></ISR_PCINT0>
+  <ISR_TMR0><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>163</LINE></ISR_TMR0>
+  <table7seg><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>32</LINE></table7seg>
+  <loop><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>105</LINE></loop>
+  <sin_cambios><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>154</LINE></sin_cambios>
+  <check_dec><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>144</LINE></check_dec>
+  <next_state><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>149</LINE></next_state>
+  <TMR0_OUT><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>180</LINE></TMR0_OUT>
+ </LABELS>
+</ASSEMBLER_INFO>

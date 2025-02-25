@@ -1,0 +1,33 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.8</VERSION>
+ <DEVICE>"ATmega328P"</DEVICE>
+ <WORKING_DIR>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\pre lab 3\Pre lab 3\Pre lab 3\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\pre lab 3\Pre lab 3\Pre lab 3\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc</FILE>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328pdef.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\pre lab 3\Pre lab 3\Pre lab 3\Debug\Pre lab 3.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>Pre lab 3.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>Pre lab 3.map</FILE>
+  <FILE>Pre lab 3.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <SETUP><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\pre lab 3\Pre lab 3\Pre lab 3\main.asm</FILE><LINE>33</LINE></SETUP>
+  <ISR_PCINT0><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\pre lab 3\Pre lab 3\Pre lab 3\main.asm</FILE><LINE>81</LINE></ISR_PCINT0>
+  <MAIN><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\pre lab 3\Pre lab 3\Pre lab 3\main.asm</FILE><LINE>73</LINE></MAIN>
+  <NO_CHANGE><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\pre lab 3\Pre lab 3\Pre lab 3\main.asm</FILE><LINE>107</LINE></NO_CHANGE>
+  <CHECK_DEC><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\pre lab 3\Pre lab 3\Pre lab 3\main.asm</FILE><LINE>97</LINE></CHECK_DEC>
+  <ACTUALIZAR_ESTADO><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\pre lab 3\Pre lab 3\Pre lab 3\main.asm</FILE><LINE>103</LINE></ACTUALIZAR_ESTADO>
+ </LABELS>
+</ASSEMBLER_INFO>

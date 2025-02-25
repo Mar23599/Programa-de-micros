@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\Lab 1\Lab1\Lab1\main.asm Mon Feb 10 22:46:04 2025
+AVRASM ver. 2.2.8  C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\Lab 1\Lab1\Lab1\main.asm Tue Feb 11 14:08:26 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\Lab 1\Lab1\Lab1\main.asm(13): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc'
@@ -1226,26 +1226,6 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\Lab 1\Lab1\Lab1\mai
 000056 957a                      DEC R23
 000057 3070                      CPI R23, 0
 000058 f7a1                      BRNE subdelay
-                                 
-000059 9508                      RET
-                                 
-                                 
-                                 
-                                 	//delay: 
-                                 
-                                 		//LDI R20,100
-                                 	//B1:
-                                 		//LDI R21, 255
-                                 	//B2:
-                                 		//LDI R22, 50
-                                 	//B3:
-                                 		//DEC R22
-                                 		//BRNE B3
-                                 		//DEC R21
-                                 		//BRNE B2
-                                 		//DEC R20
-                                 		//BRNE B1
-                                 		//RET
                                  
 
 
