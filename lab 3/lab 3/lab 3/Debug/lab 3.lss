@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm Fri Feb 21 01:56:16 2025
+AVRASM ver. 2.2.8  C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm Tue Mar 04 15:07:29 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm(10): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328pdef.inc'
@@ -1042,12 +1042,10 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\m
                                  
                                  ; Vector de interrupción
                                  
-                                 .org 0x0000                  // Colocar origen en la dirección 0x0000
-000000 c025                          rjmp setup              // cuando haya un reset, ir a setup
-                                 .org PCI1addr          // Difine la dirrección de la interrupción PCINT0
-000008 c048                          rjmp ISR_PCINT0         // Cuando hay una interrupción en PCINT0, saltar a la rutina de interrupciones
+                                 .org 0x0000   
+                                                // Colocar origen en la dirección 0x0000
                                  .org  OVF0addr // vector de interrupcion del timer0 por overflow
-000020 c043                       RJMP ISR_TMR0
+000020 c024                      	RJMP ISR_TMR0
                                  
                                  // Variables -- registros
                                  
@@ -1091,65 +1089,52 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\m
                                  
                                  // Configuración de pines
                                  
-                                 //PortB como entradas y con pull-ups activados
-                                 
-000030 e000                      LDI R16, 0x00
-000031 b904                      OUT DDRB, R16
-000032 ef0f                      LDI R16, 0xFF
-000033 b905                      OUT PORTB, R16 
                                  
                                  // PORTD como salidas en todo el puerto, se usara para el display
                                  
-000034 ef0f                      LDI R16, 0xFF
-000035 b90a                      OUT DDRD, R16 
+000030 ef0f                      LDI R16, 0xFF
+000031 b90a                      OUT DDRD, R16 
                                  
-                                 // PORTC como salidas del contador manejado por pubs
+                                 // PUERTO C controla los transistores para activar o desactivar un display
                                  
-000036 e000                      LDI R16, 0x00
-000037 b907                      OUT DDRC, R16 
+000032 e002                      LDI R16, 0x02
+000033 b907                      OUT DDRC, R16
+                                 
                                  
                                  //Configuración del timer0
-000038 e040                      LDI R20, 0x00
-000039 bd44                      OUT TCCR0A, R20 // colocar el timer en modo normal
-00003a e045                      LDI R20, 0x05 
-00003b bd45                      OUT TCCR0B, R20 // colocar prescaler de 1024
-00003c e041                      LDI R20, 0x01 
-00003d 9340 006e                 STS TIMSk0, R20 // habilitar interrupción por ovweflow
+000034 e000                      LDI R16, 0x00
+000035 bd04                      OUT TCCR0A, R16// colocar el timer en modo normal
+000036 e045                      LDI R20, 0x05 
+000037 bd05                      OUT TCCR0B, R16 // colocar prescaler de 1024
+000038 e041                      LDI R20, 0x01 
+000039 9300 006e                 STS TIMSk0, R16 // habilitar interrupción por ovweflow
                                  
-00003f 2733                      CLR OVFcounter // limpiar contador de overflows
+00003b 2733                      CLR OVFcounter // limpiar contador de overflows
                                  
-                                 
-                                 
-                                 // Configuración de interrupciones por el PB0 y PB1
-                                 
-000040 e003                      LDI R16, 0x03 
-000041 9300 006b                 STS PCMSK0, R16 // Hablitar interrupciones en PCINT0 y PCINT1
-000043 e001                      LDI R16, 0x01
-000044 9300 0068                 STS PCICR, R16 // Habilitar interrupciones de PCIE0
+                                 //pruebas
                                  
                                  
-000046 b123                      IN pb_state, PINB // Guardar el estado inicial de los botones 
                                  
-000047 e000                      LDI R16, 0x00
-000048 2f10                      MOV counter, R16 // Iniciar el contador de leeds en 0
                                  
-000049 9478                      SEI // Habilitar interrupciones globales
+00003c 9478                      SEI // Habilitar interrupciones globales
                                  
                                  // Loop principal
                                  
                                  loop:
                                  
-00004a b918                      	OUT PORTC, counter // mostrar el contador en el puerto C
+                                 	 
                                  	
                                  	// Mostrar en el display, cargando desde la tabla por medio de dirrecionamiento indirecto
                                  	
-00004b e0f0                      	LDI ZH, HIGH(table7seg*2)
-00004c e4e2                      	LDI ZL, LOW(table7seg*2)
-00004d 0fe5                      	ADD ZL, Dcounter
-00004e 9144                      	LPM R20, Z
-00004f b94b                      	OUT PORTD, R20
+00003d e0f0                      	LDI ZH, HIGH(table7seg*2)
+00003e e4e2                      	LDI ZL, LOW(table7seg*2)
+00003f 0fe5                      	ADD ZL, Dcounter
+000040 9104                      	LPM R16, Z
+000041 b90b                      	OUT PORTD, R16
+000042 e001                      	LDI R16, 0x01
+000043 b908                      	OUT PORTC, R16
                                  
-000050 cff9                      	RJMP loop
+000044 cff8                      	RJMP loop
                                  
                                  
                                  
@@ -1160,64 +1145,31 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\m
                                  
                                  //RUTINA DE INTERUPCIONES POR PB0 Y PB1
                                  
-                                 ISR_PCINT0: 
-                                 
-000051 930f                      	PUSH R16 // Colocar el valor de R16 en la pila
-000052 b70f                      	IN R16, SREG //Leer el registro de SREG
-000053 930f                      	push R16 // Guardar el registro en el estado de la pila
-                                 
-000054 b103                      	IN R16, PINB // leer el estado actual de los botones
-000055 2702                      	EOR R16, pb_state // XOR para detectar cambios en el boton. 
-000056 7003                      	ANDI R16, 0x03 // Mantener solo los primeros dos bits de PB0 y PB1
-                                 
-000057 f041                      	BREQ sin_cambios // Cuando no hayas cambios ir a no change
-                                 
-000058 9918                      	SBIC PINB, 0 // Si se detectan cambios cambiar 
-000059 c001                      	RJMP check_dec // si hubo cambio, verificar el boton
-00005a 9513                      	INC counter // Incrementar el contador
-                                 
-                                 check_dec: 
-00005b 9919                      	SBIC PINB, 1
-00005c c001                      	RJMP next_state // Si el boton pb1 esta precionado, actualizar su estado
-00005d 951a                      	DEC counter  // Decrementar el contador
-                                 
-                                 next_state:
-                                 
-00005e 701f                      	ANDi counter, 0x0F // Mascara para mantener contador en 0-15 
-00005f b123                      	IN pb_state, PINB  // Actualizar estado
-                                 
-                                 sin_cambios:
-                                 
-000060 910f                      	POP R16 // Recuperar registros de estado y retornar de la interrupcion
-000061 bf0f                      	OUT SREG, R16
-000062 910f                      	POP R16
-000063 9518                      	RETI 
-                                 
                                  
                                  // RUTINA DE INTERRUPCIONES POR TIMER0
                                  ISR_TMR0:
                                  
-000064 934f                      	PUSH R20
-000065 b74f                      	IN R20, SREG
-000066 934f                      	PUSH R20 // Guardar temporalmente el valor del PC
+000045 934f                      	PUSH R20
+000046 b74f                      	IN R20, SREG
+000047 934f                      	PUSH R20 // Guardar temporalmente el valor del PC
                                  
-000067 9533                      	INC OVFcounter // Contar hasta 50, es aproximadamente 1s
-000068 3332                      	CPI OVFcounter, 50
-000069 f429                      	BRNE TMR0_OUT
+000048 9533                      	INC OVFcounter // Contar hasta 50, es aproximadamente 1s
+000049 3332                      	CPI OVFcounter, 50
+00004a f429                      	BRNE TMR0_OUT
                                  
-00006a 2733                      	CLR OVFcounter
-00006b 9553                      	INC Dcounter
+00004b 2733                      	CLR OVFcounter
+00004c 9553                      	INC Dcounter
                                  
-00006c 305a                      	CPI Dcounter, 10
-00006d f409                      	BRNE TMR0_OUT
-00006e 2755                      	CLR Dcounter
+00004d 305a                      	CPI Dcounter, 10
+00004e f409                      	BRNE TMR0_OUT
+00004f 2755                      	CLR Dcounter
                                  
                                  TMR0_OUT:
                                  
-00006f 914f                      POP R20 // Regresar el PC counter a su cuenta normal
-000070 bf4f                      OUT SREG, R20
-000071 914f                      POP R20
-000072 9518                      RETI 
+000050 914f                      POP R20 // Regresar el PC counter a su cuenta normal
+000051 bf4f                      OUT SREG, R20
+000052 914f                      POP R20
+000053 9518                      RETI 
                                  
                                  
                                  
@@ -1240,37 +1192,37 @@ counted separately from r26..r31 here.
 "ATmega328P" register use summary:
 x  :   0 y  :   0 z  :   1 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  30 r17:   5 r18:   3 r19:   4 r20:  14 
+r13:   0 r14:   0 r15:   0 r16:  19 r17:   0 r18:   0 r19:   4 r20:   8 
 r21:   4 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   2 r31:   1 
-Registers used: 9 out of 35 (25.7%)
+Registers used: 7 out of 35 (20.0%)
 
 "ATmega328P" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   1 adiw  :   0 and   :   0 
-andi  :   2 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 break :   0 breq  :   1 brge  :   0 brhc  :   0 
+andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
 brne  :   2 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
 brvs  :   0 bset  :   0 bst   :   0 call  :   0 cbi   :   0 cbr   :   0 
 clc   :   0 clh   :   0 cli   :   1 cln   :   0 clr   :   3 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
-cpi   :   2 cpse  :   0 dec   :   1 eor   :   1 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   5 inc   :   3 jmp   :   0 
-ld    :   0 ldd   :   0 ldi   :  15 lds   :   0 lpm   :   2 lsl   :   0 
-lsr   :   0 mov   :   1 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  12 pop   :   4 
-push  :   4 rcall :   0 ret   :   0 reti  :   2 rjmp  :   6 rol   :   0 
-ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   2 sbis  :   0 
+cpi   :   2 cpse  :   0 dec   :   0 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   1 inc   :   2 jmp   :   0 
+ld    :   0 ldd   :   0 ldi   :  11 lds   :   0 lpm   :   2 lsl   :   0 
+lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
+neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :   9 pop   :   2 
+push  :   2 rcall :   0 ret   :   0 reti  :   1 rjmp  :   2 rol   :   0 
+ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 
 sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   5 
+sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   3 
 sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 22 out of 113 (19.5%)
+Instructions used: 16 out of 113 (14.2%)
 
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0000e6    160     10    170   32768   0.5%
+[.cseg] 0x000000 0x0000a8     94     10    104   32768   0.3%
 [.dseg] 0x000100 0x000100      0      0      0    2048   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 

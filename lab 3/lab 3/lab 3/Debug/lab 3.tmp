@@ -23,14 +23,10 @@
   <FILE>lab 3.lss</FILE>
  </OUTPUT_FILES>
  <LABELS>
-  <setup><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>39</LINE></setup>
-  <ISR_PCINT0><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>128</LINE></ISR_PCINT0>
-  <ISR_TMR0><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>163</LINE></ISR_TMR0>
-  <table7seg><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>32</LINE></table7seg>
-  <loop><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>105</LINE></loop>
-  <sin_cambios><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>154</LINE></sin_cambios>
-  <check_dec><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>144</LINE></check_dec>
-  <next_state><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>149</LINE></next_state>
-  <TMR0_OUT><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>180</LINE></TMR0_OUT>
+  <ISR_TMR0><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>115</LINE></ISR_TMR0>
+  <table7seg><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>30</LINE></table7seg>
+  <setup><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>37</LINE></setup>
+  <loop><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>88</LINE></loop>
+  <TMR0_OUT><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\lab 3\lab 3\lab 3\main.asm</FILE><LINE>132</LINE></TMR0_OUT>
  </LABELS>
 </ASSEMBLER_INFO>

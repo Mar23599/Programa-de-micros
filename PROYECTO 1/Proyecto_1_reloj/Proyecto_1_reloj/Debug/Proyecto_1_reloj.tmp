@@ -23,7 +23,25 @@
   <FILE>Proyecto_1_reloj.lss</FILE>
  </OUTPUT_FILES>
  <LABELS>
-  <SETUP><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>61</LINE></SETUP>
-  <LOOP><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>127</LINE></LOOP>
+  <SETUP><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>104</LINE></SETUP>
+  <ISR_PCI1><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>330</LINE></ISR_PCI1>
+  <ISR_CPMA><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>362</LINE></ISR_CPMA>
+  <TABLA7SEG><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>89</LINE></TABLA7SEG>
+  <LOOP><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>192</LINE></LOOP>
+  <TIEMPO_cuenta><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>222</LINE></TIEMPO_cuenta>
+  <PRINT_DISPLAY><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>269</LINE></PRINT_DISPLAY>
+  <PRINT_contador_modo><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>205</LINE></PRINT_contador_modo>
+  <TIEMPO_cuenta_EXIT><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>263</LINE></TIEMPO_cuenta_EXIT>
+  <PRINT_0><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>287</LINE></PRINT_0>
+  <PRINT_1><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>294</LINE></PRINT_1>
+  <PRINT_2><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>302</LINE></PRINT_2>
+  <PRINT_3><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>309</LINE></PRINT_3>
+  <PRINT_DISPLAY_EXIT><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>319</LINE></PRINT_DISPLAY_EXIT>
+  <CHECK_MODO_ISR><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>337</LINE></CHECK_MODO_ISR>
+  <modo_0_PC><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>348</LINE></modo_0_PC>
+  <modo_1_PC><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>350</LINE></modo_1_PC>
+  <ISP_PCI1_OUT><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>357</LINE></ISP_PCI1_OUT>
+  <TIEMPO_cuenta_segundo><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>370</LINE></TIEMPO_cuenta_segundo>
+  <ISR_CPMA_OUT><FILE>C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm</FILE><LINE>382</LINE></ISR_CPMA_OUT>
  </LABELS>
 </ASSEMBLER_INFO>

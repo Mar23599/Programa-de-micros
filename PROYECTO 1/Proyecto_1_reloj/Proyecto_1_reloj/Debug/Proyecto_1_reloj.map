@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm Mon Feb 24 22:43:34 2025
+AVRASM ver. 2.2.8  C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm Thu Mar 06 09:45:25 2025
 
 
 EQU  SIGNATURE_000 0000001e
@@ -695,7 +695,35 @@ EQU  ACIaddr      0000002e
 EQU  TWIaddr      00000030
 EQU  SPMRaddr     00000032
 EQU  INT_VECTORS_SIZE 00000034
-DEF  tiempo       r17
-DEF  contador     r18
-CSEG SETUP        00000005
-CSEG LOOP         0000002b
+EQU  comparacion_1seg 00000064
+EQU  CTC_TMR0_cuenta 0000009c
+DEF  contador_modo r17
+EQU  cantidad_modos 00000005
+DEF  bandera_modo r18
+DEF  contador_1_seg r19
+DEF  contador_60_seg r20
+DEF  minutos_u    r21
+DEF  minutos_d    r22
+DEF  horas_u      r23
+DEF  horas_d      r24
+DEF  control_display r25
+CSEG SETUP        00000027
+CSEG ISR_PCI1     00000092
+CSEG ISR_CPMA     0000009d
+CSEG TABLA7SEG    0000001e
+CSEG LOOP         00000053
+CSEG TIEMPO_cuenta 00000064
+CSEG PRINT_DISPLAY 0000007b
+CSEG PRINT_contador_modo 0000005a
+CSEG TIEMPO_cuenta_EXIT 0000007a
+CSEG PRINT_0      00000087
+CSEG PRINT_1      0000008a
+CSEG PRINT_2      0000008c
+CSEG PRINT_3      0000008e
+CSEG PRINT_DISPLAY_EXIT 00000091
+CSEG CHECK_MODO_ISR 00000095
+CSEG modo_0_PC    0000009a
+CSEG modo_1_PC    0000009b
+CSEG ISP_PCI1_OUT 0000009c
+CSEG TIEMPO_cuenta_segundo 000000a1
+CSEG ISR_CPMA_OUT 000000a6

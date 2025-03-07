@@ -94,7 +94,7 @@ loop:
 	LDI ZH, HIGH(table7seg*2)
 	LDI ZL, LOW(table7seg*2)
 	ADD ZL, Dcounter
-	LPM RR16, Z
+	LPM R16, Z
 	OUT PORTD, R16
 	LDI R16, 0x01
 	OUT PORTC, R16

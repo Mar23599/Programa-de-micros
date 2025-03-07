@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm Mon Feb 24 22:43:34 2025
+AVRASM ver. 2.2.8  C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm Thu Mar 06 09:45:25 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm(20): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328pdef.inc'
@@ -1055,10 +1055,47 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
                                  // VARIABLES GLOBALES
                                  ;**************************************************************************************************
                                  
+                                 .equ comparacion_1seg = 100 // Numero que cuenta 10ms para alcanzar 1 segundos
+                                 .equ CTC_TMR0_cuenta = 156 // Numero hasta el que cuenta el timer0, en modo CTC
+                                 
+                                 
                                  ; R16: Se utilizara para variables temporales
                                  
-                                 .def tiempo = R17
-                                 .def contador = R18
+                                 // Contadores para llevar la cuenta de toda unidad y decena de tiempo
+                                 
+                                 .def contador_modo =R17  // Contador de modo
+                                 ; Modo = 0, mostrar hora
+                                 ; Modo = 1, Mostrar fecha
+                                 ; Modo = 2, configurar minutos
+                                 ; Modo = 3, configurar horas
+                                 ; Modo = 4, configurar Dia
+                                 ; Modo = 5, configurar Mes
+                                 ; modo = 6, configurar alarma
+                                 ; modo = 7, NO SE AUN. :)
+                                 .equ cantidad_modos = 5 // Puede cambiar dependiendo de la cantidad de modos, mas uno que haya
+                                 
+                                 .def bandera_modo =  R18  // bandera de control para modos. 
+                                 // bandera_modo = 1 -> incrementar---bandera_modo = 2 -> decrementar---bandera_modo = 0 -> Hacer nada
+                                 
+                                 .def contador_1_seg = R19// Contador que cuando se llena con 100, ha pasado 1 segundo. 
+                                 .def contador_60_seg = R20 // contador que incrementa cada segundo. 
+                                 
+                                 .def minutos_u = R21 // Cuenta de minutos. Unidades y Decenas
+                                 .def minutos_d = R22
+                                 
+                                 .def horas_u = R23 // Cuenta de horas. Unidades y decenas
+                                 .def horas_d = R24
+                                 
+                                 .def control_display = R25 // Control de display por medio de transitores
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 // Dirrecciones de memoria para almancenar data
+                                  
                                  
                                  
                                  
@@ -1066,24 +1103,34 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
                                  // Vectores de RESET
                                  ;**************************************************************************************************
                                  
+                                 .cseg
                                  .org 0x0000
-000000 c004                      	RJMP SETUP // Configurar vector de reset
+000000 940c 0027                 	JMP SETUP // Configurar vector de reset
                                  
                                  ;**************************************************************************************************
                                  // Vectores de interrupcion
                                  ;**************************************************************************************************
-                                 //.org 0x0018 // Vector de interrupcion por comparacion
-                                 	//RJMP ISR_CPMA // Rutina de interrupcion cada 10ms
+                                 .org PCI1addr
+000008 940c 0092                 	JMP ISR_PCI1 
+                                 .org OC0Aaddr // Vector de interrupcion por comparacion
+00001c 940c 009d                 	JMP ISR_CPMA // Rutina de interrupcion cada 10ms
                                  
                                  
+                                 // tablas; Se coloco aqui para evitar el problemas con los vectores de reset e interrupcion
+                                 TABLA7SEG:
+00001e 063f
+00001f 4f5b
+000020 6d66
+000021 077d
+000022 6f7f                          .db 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F // tabla para display de 7 segmentos
                                  ;**************************************************************************************************
                                  // Configuracion de la pila
                                  ;**************************************************************************************************
                                  
-000001 e008                      LDI R16, HIGH(RAMEND)
-000002 bf0e                      OUT SPH, R16
-000003 ef0f                      LDI R16, LOW(RAMEND)
-000004 bf0d                      OUT SPL, R16
+000023 e008                      LDI R16, HIGH(RAMEND)
+000024 bf0e                      OUT SPH, R16
+000025 ef0f                      LDI R16, LOW(RAMEND)
+000026 bf0d                      OUT SPL, R16
                                  
                                  ;**************************************************************************************************
                                  //Configuración de sistema
@@ -1092,103 +1139,283 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
                                  SETUP:
                                  
                                  // Desabilitar interrupciones globales
-000005 94f8                      CLI
+000027 94f8                      CLI
                                  
                                  
                                  // Configuración de la Frecuencia del reloj del sistema:
                                  
-000006 e800                      LDI R16, (1 << CLKPCE)
-000007 9300 0061                 STS CLKPR, R16			// Habilitar el cambio del prescaler
-000009 e002                      LDI R16, 0b00000010     // Configuracion: 4MHz 
-00000a 9300 0061                 STS CLKPR, R16
+000028 e800                      LDI R16, (1 << CLKPCE)
+000029 9300 0061                 STS CLKPR, R16			// Habilitar el cambio del prescaler
+00002b e002                      LDI R16, 0b00000010     // Configuracion: 4MHz 
+00002c 9300 0061                 STS CLKPR, R16
                                  
                                  // desabilitar leds de comunicacion
                                  
-00000c e000                      LDI R16, 0x00
-00000d 9300 00c1                 STS UCSR0B, R16
-00000f 9300 00c2                 STS UCSR0C, R16 
+00002e e000                      LDI R16, 0x00
+00002f 9300 00c1                 STS UCSR0B, R16
+000031 9300 00c2                 STS UCSR0C, R16 
                                  
                                  // TIMER0: Configuracion del timer0
                                  
-000011 e002                      LDI R16, (1 << WGM01) 
-000012 9300 0024                 STS TCCR0A, R16 // Configurar el timer0 con modo CTC
-000014 e004                      LDI R16, (1 << CS02)
-000015 9300 0025                 STS TCCR0B, R16 // Configurar prescaler de 256
+000033 e002                      LDI R16, (1 << WGM01) 
+000034 bd04                      OUT TCCR0A, R16 // Configurar el timer0 con modo CTC
+000035 e004                      LDI R16, (1 << CS02)
+000036 bd05                      OUT TCCR0B, R16 // Configurar prescaler de 256 al timer0
                                  
-000017 e90c                      LDI R16, 156
-000018 9300 0027                 STS OCR0A, R16 // Configurar el valor de comparación: Calculado para que se compare a los 0.01s (10ms)
+000037 e90c                      LDI R16, CTC_TMR0_cuenta // 156
+000038 bd07                      OUT OCR0A, R16 // Configurar el valor de comparación: Calculado para que se compare a los 0.01s (10ms)
                                  
-00001a e002                      LDI R16, (1 << OCIE0A)
-00001b 9300 006e                 STS TIMSK0, R16 // Habilitar interrupciones por comparación
+000039 e002                      LDI R16, (1 << OCIE0A)
+00003a 9300 006e                 STS TIMSK0, R16 // Habilitar interrupciones por comparación
                                  
                                  
                                  //Puerto D: configuracion como salida. Se utilizara para imprimir en display
                                  
-00001d ef0f                      LDI R16, 0xFF
-00001e b90a                      OUT DDRD, R16
+00003c ef0f                      LDI R16, 0xFF
+00003d b90a                      OUT DDRD, R16
                                  
                                  //Puerto B: Configuración como salida: Se utilizara para control de los display, por medio de transistores
                                  
-00001f ef0f                      LDI R16, 0xFF
-000020 b904                      OUT DDRB, R16
+00003e ef0f                      LDI R16, 0xFF
+00003f b904                      OUT DDRB, R16
                                  
-                                 // Puerto C: Configuración como entrada: Se utilizara para utilizar pushbotoms
+                                 // Puerto C: Configuración como entrada y salidas: Se utilizara para utilizar pushbotoms y contador de modo (0,0,S2,S1,S0,PB2,PB1,PB0)
                                  
-000021 e000                      LDI R16, 0x00
-000022 b907                      OUT DDRC, R16
+000040 e308                      LDI R16, 0b00111000
+000041 b907                      OUT DDRC, R16
                                  
-000023 ef0f                      LDI R16, 0xFF
-000024 b908                      OUT PORTC, R16 // Activar pull-ups
+000042 e007                      LDI R16, 0b00000111
+000043 b908                      OUT PORTC, R16 // Activar pull-ups en pines de entrada
+                                 
+                                 // Configuracion de interrupciones en PUERTOC , bit 0, 
+                                 
+                                 
+000044 e007                      LDI R16, (1 << PC0)  | (1 << PC1) | (1 << PC2) 
+000045 9300 006c                 STS PCMSK1, R16 // Habilitar las interrupciones en PC0, PC1 y PC2
+                                 
+000047 e002                      LDI R16, (1 << PCIE1)
+000048 9300 0068                 STS PCICR, R16 // habilitar interrupciones en Puerto C
+                                 
+                                 
                                  
                                  // Inicialización de variables
-000025 2722                      CLR contador
-000026 2711                      CLR tiempo
-000027 ef0f                      LDI R16, 0xFF
-000028 b905                      OUT PORTB, R16
-000029 ef2f                      LDI contador, 0xFF
+00004a 2711                      CLR contador_modo
+00004b 2733                      CLR contador_1_seg
+00004c 2744                      CLR contador_60_seg
+00004d 2755                      CLR minutos_u
+00004e 2766                      CLR minutos_d
+00004f 2777                      CLR horas_u
+000050 2788                      CLR horas_d 
+000051 2799                      CLR control_display
                                  
-                                 // Habilitar interrupciones globales
+                                 // Inicializar contadores de registros indirectos en 0
                                  
-00002a 9478                      SEI
+                                 
+                                 
+                                 
+                                 // Transistor de prueba -- SE VA A QUITAR PARA PRUEBAS EN TODOS LOS DISPLAYs. 
+                                 //LDI R16, 0x1
+                                 //OUT PORTB, R16
+                                 
+                                 
+000052 9478                      SEI
                                  
                                  ;**************************************************************************************************
                                  //LOOP
                                  ;**************************************************************************************************
                                  
                                  LOOP:
+000053 940e 0064                 	CALL TIEMPO_cuenta		// Lleva la cuenta de TODO el timpo 
+000055 940e 007b                 	CALL PRINT_DISPLAY
+000057 940e 005a                 	CALL PRINT_contador_modo // Mostrar el contador de modo
                                  
-00002b b92b                      OUT PORTD, contador
-                                 
-00002c cffe                      RJMP LOOP
+000059 cff9                      RJMP LOOP
                                  
                                  ;**************************************************************************************************
                                  //FUNCIONES
                                  ;**************************************************************************************************
                                  
                                  
+                                 //FUNCION QUE IMPRIME EL CONTADOR DE MODO
+                                 PRINT_contador_modo:
+                                 		
+00005a 9843                      	CBI PORTC, PC3
+00005b 9844                      	CBI PORTC, PC4
+00005c 9845                      	CBI PORTC, PC5 // Limpiar registros, evitar señales parasitas
                                  
+00005d fd10                      	SBRC contador_modo, 0 // Si CONTADOR_MODO[0] = 1, colocar 1, sino sigue en0
+00005e 9a43                      	SBI PORTC, PC3
+00005f fd11                      	SBRC contador_modo, 1 // Si CONTADOR_MODO[1] = 1, colocar 1, sino sigue en 0
+000060 9a44                      	SBI PORTC, PC4
+000061 fd12                      	SBRC contador_modo, 2 // Si CONTADOR_MODO[2] = 1, colocar 1, sino sigue en 0
+000062 9a45                      	SBI PORTC, PC5
+                                 
+000063 9508                      	RET
+                                 
+                                 // FUNCION QUE CUENTA TIEMPO
+                                 
+                                 TIEMPO_cuenta:
+                                 
+                                 
+000064 334c                      	CPI contador_60_seg, 60
+000065 f4a1                      	BRNE TIEMPO_cuenta_EXIT // Si no han pasado 60 segundos, SALIR. 
+                                 
+000066 2744                      	CLR contador_60_seg // Cada que se alcancen los 60 segundos, limpiar la cuenta de segundos
+000067 9553                      	INC minutos_u		// Cada que se alcancen 60 segundos, incrementar los minutos 
+                                 
+000068 305a                      	CPI minutos_u, 10 // Revisar cuando llegue a 10 minutos
+000069 f481                      	BRNE TIEMPO_cuenta_EXIT // Salir sino a llegado a los 10 minutos
+                                 
+00006a 2755                      	CLR minutos_u // Cuando se alcancen los 10 minutos, limpiar la cuenta
+00006b 9563                      	INC minutos_d // Cada 10 minutos, incrementar la cuenta de decenas de minutos
+                                 
+00006c 336c                      	CPI minutos_d, 60 // Revisar cuando se alcancen 60 minutos, limpiar la cuenta
+00006d f461                      	BRNE TIEMPO_cuenta_EXIT // Sino se alcanzan los 60 minutos, salir
+                                 
+00006e 2766                      	CLR minutos_D // Cuando se alcancen los 60 minutos, limpiar la cuenta
+00006f 9573                      	INC horas_u // Cuando se alcanen los 60 minutos, aumentar las horas
+                                 
+000070 307a                      	CPI horas_u, 10 // Revisar cuando se alcancen las 10 horas
+000071 f441                      	BRNE TIEMPO_cuenta_EXIT // Sino se alcanzan las 10 horas, salir
+                                 
+000072 2777                      	CLR horas_u // Cuando se alcancen las 10 horas, limpiar la cuenta
+000073 9583                      	INC horas_d // Cuando se alcancen 10 horas, incrementar las decenas
+                                 
+                                 	//Logica para resetearse en 24 horas
+                                 
+000074 3082                      	CPI horas_d, 2 // Revisar cuando se alcancen las 20 horas
+000075 f421                      	BRNE TIEMPO_cuenta_EXIT // Si no se alcanzaron 20 horas, salir
+                                 
+000076 3074                      	CPI horas_u, 4 // Cuando se alzancen las 20 horas, revisar las 4 unidades de hora
+000077 f411                      	BRNE TIEMPO_cuenta_EXIT // Sino se alcanzan las 24 horas, salir
+                                 
+000078 2777                      	CLR horas_u
+000079 2788                      	CLR horas_d // Cuando se alcanzen las 24 horas, limpiar las horas
+                                 
+                                 	// INC DIA CUENTA DE LOS DIAS
+                                 
+                                 
+                                 TIEMPO_cuenta_EXIT:
+00007a 9508                      RET
+                                 
+                                 
+                                 // Funcion que muestra en display
+                                 
+                                 PRINT_DISPLAY:
+                                 
+00007b 9828                      CBI PORTB, 0 
+00007c 9829                      CBI PORTB, 1
+00007d 982a                      CBI PORTB, 2
+00007e 982b                      CBI PORTB, 3
+                                 
+00007f 3090                      CPI control_display, 0
+000080 f031                      BREQ PRINT_0 // ACTIVAR DISPLAY 1
+000081 3091                      CPI control_display, 1
+000082 f039                      BREQ PRINT_1 // ACTIVAR DISPLAY 2
+000083 3092                      CPI control_display, 2
+000084 f039                      BREQ PRINT_2 // ACTIVAR DISPLAY 3
+000085 3093                      CPI control_display, 3
+000086 f039                      BREQ PRINT_3 // ACTIVAR DISPLAY 3
+                                 
+                                 
+                                 
+                                 PRINT_0:
+                                 
+                                 
+000087 9a2b                      SBI PORTB, 3 // ACTIVAR DISPLAY 1 
+000088 e001                      LDI R16, 0x01
+000089 b90b                      OUT PORTD, R16
+                                 
+                                 PRINT_1:
+                                 
+00008a 9a2a                      SBI PORTB, 2 // ACTIVAR DISPLAY 2 
+                                 
+                                 
+                                 
+00008b b90b                      OUT PORTD, R16
+                                 
+                                 PRINT_2:
+                                 
+00008c 9a29                      SBI PORTB, 1 // ACTIVAR DISPLAY 3 
+                                 
+                                 
+00008d b90b                      OUT PORTD, R16
+                                 
+                                 PRINT_3:
+                                 
+00008e 9a28                      SBI PORTB, 0 // ACTIVAR DISPLAY 4
+                                 
+00008f e000                      LDI R16, 0x00
+000090 b90b                      OUT PORTD, R16
+                                 
+                                 //OUT PORTD, horas_d
+                                 
+                                 
+                                 PRINT_DISPLAY_EXIT:
+000091 9508                      	RET
+                                 
+                                 	
+                                 
+                                 	
                                  ;**************************************************************************************************
                                  // RUTINAS DE INTERRUPCIONES
                                  ;**************************************************************************************************
                                  
+                                 
+                                 ISR_PCI1:
+                                 
+000092 9b30                      	SBIS PINC, PC0 // Revisa cuando se presione el boton
+000093 9513                      	INC contador_modo
+000094 7017                      	ANDI contador_modo, 0x07 // Mascara para regresar a 0 cada vez que se alcanze 0.
+                                 
+                                 
+                                 CHECK_MODO_ISR:
+                                 
+000095 3010                      	CPI contador_modo, 0 // Cuando este en modo 0
+000096 f019                      	BREQ modo_0_PC	// Saltar a modo 0
+                                 	
+000097 3011                      	CPI contador_modo, 1 // Cuando este en modo 1
+000098 f011                      	BREQ modo_1_PC // Saltar a modo 1
+                                 
+000099 c002                      	RJMP ISP_PCI1_OUT
+                                 	
+                                 
+                                 modo_0_PC:
+00009a c001                      	RJMP ISP_PCI1_OUT // En modo 0, los botones NO hacen nada. 
+                                 modo_1_PC:
+00009b c000                      	RJMP ISP_PCI1_OUT // En modo 0, los botones NO hacen nada. 
+                                 
+                                 
+                                 	
+                                 
+                                 
+                                 ISP_PCI1_OUT:
+00009c 9518                      RETI
+                                 
+                                 
                                  // Rutina de interrupcion por comparación (sucede cada 10ms)
-                                 ;ISR_CPMA:
+                                 ISR_CPMA:
                                  
-                                 ;IN R16, SREG 
-                                 ;PUSH R16 // Guardar banderas 
-                                 
-                                 ;INC tiempo
-                                 ;CPI tiempo, 10 // Cuando este sea 10, habra pasado 1s
-                                 ;BRNE ISR_CPMA_OUT
-                                 ;CLR tiempo
-                                 ;INC contador
-                                 ;ANDI contador, 0x0F
+00009d 9593                      	INC control_display
+00009e 3094                      	CPI control_display, 4
+00009f f409                      	BRNE TIEMPO_cuenta_segundo
+0000a0 2799                      	CLR control_display
                                  
                                  
-                                 ;ISR_CPMA_OUT:
-                                 ;POP R16
-                                 ;OUT SREG, R16 // recuperar banderas de SREG
-                                 ;RETI 
+                                 TIEMPO_cuenta_segundo:
+                                 
+                                 	// Cada 10ms incrementar el contador hasta alcanzar 1 segundo. 
+0000a1 9533                      	INC contador_1_seg // Incrementar el contador cada 10ms
+0000a2 3634                      	CPI contador_1_seg, comparacion_1seg// Comparar el contador con 100. Cuando sean iguales, habrá pasado 1 segundo
+0000a3 f411                      	BRNE ISR_CPMA_OUT // Cuando no sean iguales, salir. si son iguales...
+                                 	
+0000a4 2733                      	CLR contador_1_seg // LIMPIAR el contador de 1 seg, cada que este se alcanze para reiniciar la cuenta. 
+0000a5 9543                      	INC contador_60_seg // Cada que pasa 1 segundo, aumentar el contador de 60segundos. Este se limpia en otra funcion. 
+                                 
+                                 	
+                                 
+                                 ISR_CPMA_OUT:
+0000a6 9518                      	RETI
                                  
 
 
@@ -1209,37 +1436,37 @@ counted separately from r26..r31 here.
 "ATmega328P" register use summary:
 x  :   0 y  :   0 z  :   0 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  29 r17:   1 r18:   3 r19:   0 r20:   0 
-r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
+r13:   0 r14:   0 r15:   0 r16:  37 r17:   8 r18:   0 r19:   4 r20:   4 
+r21:   4 r22:   4 r23:   6 r24:   4 r25:   8 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   0 r31:   0 
-Registers used: 3 out of 35 (8.6%)
+Registers used: 9 out of 35 (25.7%)
 
 "ATmega328P" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   0 adiw  :   0 and   :   0 
-andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
+andi  :   1 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :   6 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
-brne  :   0 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
-brvs  :   0 bset  :   0 bst   :   0 call  :   0 cbi   :   0 cbr   :   0 
-clc   :   0 clh   :   0 cli   :   1 cln   :   0 clr   :   2 cls   :   0 
+brne  :   8 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+brvs  :   0 bset  :   0 bst   :   0 call  :   3 cbi   :   7 cbr   :   0 
+clc   :   0 clh   :   0 cli   :   1 cln   :   0 clr   :  16 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
-cpi   :   0 cpse  :   0 dec   :   0 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   0 jmp   :   0 
-ld    :   0 ldd   :   0 ldi   :  15 lds   :   0 lpm   :   0 lsl   :   0 
+cpi   :  14 cpse  :   0 dec   :   0 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   8 jmp   :   3 
+ld    :   0 ldd   :   0 ldi   :  17 lds   :   0 lpm   :   0 lsl   :   0 
 lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :   8 pop   :   0 
-push  :   0 rcall :   0 ret   :   0 reti  :   0 rjmp  :   2 rol   :   0 
-ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 
-sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
+neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  13 pop   :   0 
+push  :   0 rcall :   0 ret   :   3 reti  :   2 rjmp  :   4 rol   :   0 
+ror   :   0 sbc   :   0 sbci  :   0 sbi   :   7 sbic  :   0 sbis  :   1 
+sbiw  :   0 sbr   :   0 sbrc  :   3 sbrs  :   0 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   8 
+sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   7 
 sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 7 out of 113 (6.2%)
+Instructions used: 20 out of 113 (17.7%)
 
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x00005a     90      0     90   32768   0.3%
+[.cseg] 0x000000 0x00014e    276     10    286   32768   0.9%
 [.dseg] 0x000100 0x000100      0      0      0    2048   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 
