@@ -24,8 +24,8 @@
 // VARIABLES GLOBALES
 ;**************************************************************************************************
 
-.equ comparacion_1seg = 100 // Numero que cuenta 10ms para alcanzar 1 segundos
-.equ CTC_TMR0_cuenta = 156 // Numero hasta el que cuenta el timer0, en modo CTC
+.equ comparacion_1seg = 1 // 100: Numero que cuenta cada  10ms para alcanzar 1 segundos
+.equ CTC_TMR0_cuenta = 1 // 156: Numero hasta el que cuenta el timer0, en modo CTC
 
 
 ; R16: Se utilizara para variables temporales
@@ -60,10 +60,26 @@
 
 
 
-
-
-
 // Dirrecciones de memoria para almancenar data
+
+.dseg
+.org SRAM_START // 0x0100
+
+dias_u: .byte 1 
+dias_d: .byte 1 
+mes_u: .byte 1
+mes_d: .byte 1
+
+
+
+contador_mes: .byte 1 // Contador de mes.
+dias_del_mes: .byte 1 // Guarda el valor al que debe de llegar el mes
+contador_horas: .byte 1 // Cuenta horas
+
+copia_0: .byte 1
+copia_1: .byte 1
+copia_2: .byte 1
+copia_3: .byte 1
  
 
 
@@ -175,6 +191,17 @@ CLR control_display
 
 // Inicializar contadores de registros indirectos en 0
 
+LDI R16, 0x01		// Setear en 1
+STS dias_u, R16		// Las unidades de día, empiezan en 1
+STS mes_u, R16		// Las unidades de día, empiezan en 1
+
+STS contador_mes, R16 // Contador_mes empieza en 1. 
+
+LDI R16, 0x00
+STS dias_d, R16		// Las decenas de dia, empiezan en 0
+STS mes_d, R16		// Las decenas de dia, empiezan en 0
+STS contador_horas, R16 // La cuenta de horas empieza 0
+
 
 
 
@@ -191,6 +218,7 @@ SEI
 
 LOOP:
 	CALL TIEMPO_cuenta		// Lleva la cuenta de TODO el timpo 
+	CALL COPY__FOR_MODE
 	CALL PRINT_DISPLAY
 	CALL PRINT_contador_modo // Mostrar el contador de modo
 
@@ -199,6 +227,9 @@ RJMP LOOP
 ;**************************************************************************************************
 //FUNCIONES
 ;**************************************************************************************************
+
+
+
 
 
 //FUNCION QUE IMPRIME EL CONTADOR DE MODO
@@ -222,6 +253,20 @@ PRINT_contador_modo:
 TIEMPO_cuenta:
 
 
+	LDS R16, contador_horas // revisar contador_horas
+	CPI R16, 24			// Comparar cuando llegue a 24
+	BRNE CONTAR_TIEMPO
+
+	CLR R16
+	STS contador_horas, R16
+
+	CLR horas_u
+	CLR horas_d
+	CLR minutos_u
+	CLR minutos_d
+
+CONTAR_TIEMPO:
+
 	CPI contador_60_seg, 60
 	BRNE TIEMPO_cuenta_EXIT // Si no han pasado 60 segundos, SALIR. 
 
@@ -234,11 +279,16 @@ TIEMPO_cuenta:
 	CLR minutos_u // Cuando se alcancen los 10 minutos, limpiar la cuenta
 	INC minutos_d // Cada 10 minutos, incrementar la cuenta de decenas de minutos
 
-	CPI minutos_d, 60 // Revisar cuando se alcancen 60 minutos, limpiar la cuenta
+	CPI minutos_d, 6 // Revisar cuando se alcancen 60 minutos, limpiar la cuenta
 	BRNE TIEMPO_cuenta_EXIT // Sino se alcanzan los 60 minutos, salir
 
-	CLR minutos_D // Cuando se alcancen los 60 minutos, limpiar la cuenta
+	CLR minutos_d // Cuando se alcancen los 60 minutos, limpiar la cuenta
 	INC horas_u // Cuando se alcanen los 60 minutos, aumentar las horas
+
+
+	LDS R16, contador_horas
+	INC R16
+	STS contador_horas, R16 // Incrementar contador de horas. 
 
 	CPI horas_u, 10 // Revisar cuando se alcancen las 10 horas
 	BRNE TIEMPO_cuenta_EXIT // Sino se alcanzan las 10 horas, salir
@@ -246,74 +296,221 @@ TIEMPO_cuenta:
 	CLR horas_u // Cuando se alcancen las 10 horas, limpiar la cuenta
 	INC horas_d // Cuando se alcancen 10 horas, incrementar las decenas
 
-	//Logica para resetearse en 24 horas
+	CPI horas_d, 10
+	BRNE TIEMPO_cuenta_EXIT
 
-	CPI horas_d, 2 // Revisar cuando se alcancen las 20 horas
-	BRNE TIEMPO_cuenta_EXIT // Si no se alcanzaron 20 horas, salir
+	CLR horas_d
+	
 
-	CPI horas_u, 4 // Cuando se alzancen las 20 horas, revisar las 4 unidades de hora
-	BRNE TIEMPO_cuenta_EXIT // Sino se alcanzan las 24 horas, salir
+	RJMP TIEMPO_cuenta_EXIT
 
-	CLR horas_u
-	CLR horas_d // Cuando se alcanzen las 24 horas, limpiar las horas
 
-	// INC DIA CUENTA DE LOS DIAS
-
+;SET_MES:	// Esta función setea hasta cuantos días debe llegar el mes, en funcion de en que mes se encuentra
+;
+;	LDS R16, contador_mes // Cargar valor del mes a R16
+;
+;	CPI R16, 1 // Enero
+;	BREQ 31_dias
+;
+;	CPI R16, 2 // Febrero
+;	BREQ 28_dias
+;
+;	CPI R16, 3 // Marzo
+;	BREQ 31_dias
+;
+;	CPI R16, 4 // Abril
+;	BREQ 30_dias
+;
+;	CPI R16, 5 // Mayo
+;	BREQ 31_dias
+;
+;	CPI R16, 6 // Junio
+;	BREQ 30_dias	
+;
+;	CPI R16, 7 // Julio
+;	BREQ 31_dias
+;
+;	CPI R16, 8 // Agosto
+;	BREQ 31_dias
+;
+;	CPI R16, 9 // Septiembre
+;	BREQ 30_dias
+;
+;	CPI R16, 10 // Octubre
+;	BREQ 31_dias
+;
+;	CPI R16, 11 // Novimembre
+;	BREQ 30_dias
+;
+;	CPI R16, 12 // Diciembre
+;	BREQ 31_dias
+;	
+;
+;
+;28_dias:
+;	
+;	LDI R16, 28		// Configurar 28 dias como cantidad del días
+;	STS dias_del_mes, R16
+;	JMP SET_MES_EXIT
+;
+;30_dias:
+;
+;	LDI R16, 30		// Configurar 30 dias como cantidad del días
+;	STS dias_del_mes, R16
+;	JMP SET_MES_EXIT
+;
+;31_dias:
+;	
+;	LDI R16, 31 // Configurar 31 dias como cantidad del días
+;	STS dias_del_mes, R16
+;	JMP SET_MES_EXIT
+;
+;SET_MES_EXIT:
+;	RET
+;
 
 TIEMPO_cuenta_EXIT:
-RET
+	RET
+
+// Funcion que copia registros para imprimirlos en displays en funcion del modo
+COPY__FOR_MODE:
+
+	CPI contador_modo, 0
+	BREQ view_time
+	CPI contador_modo, 1
+	BREQ view_date
+	
+	JMP COPY_FOR_MODE_EXIT
+
+view_time: //Copiar contadores de hora, para mostrarlos
+
+	MOV R16, minutos_u
+	STS copia_0, R16 // Copiar minutos_u en copia_0
+
+	MOV R16, minutos_d
+	STS copia_1, R16 // Copiar minutos_u en copia_1
+
+	MOV R16, horas_u
+	STS copia_2, R16 // Copiar minutos_u en copia_2
+
+	MOV R16, horas_d
+	STS copia_3, R16 // Copiar minutos_u en copia_3
+	
+	RJMP COPY_FOR_MODE_EXIT
+
+
+view_date:
+
+	LDI R16, 0x00
+	;MOV R16, dia_u
+	STS copia_0, R16 // Copiar dia_u en copia_0
+
+	LDI R16, 0x01
+	;MOV R16, dia_d
+	STS copia_1, R16 // Copiar dia_d en copia_1
+
+	LDI R16, 0x02
+	;MOV R16, mes_u
+	STS copia_2, R16 // Copiar mes_u en copia_2
+
+	LDS R16, contador_horas
+	;MOV R16, mes_d
+	STS copia_3, R16 // Copiar mes_d en copia_3
+
+	RJMP COPY_FOR_MODE_EXIT
+
+
+COPY_FOR_MODE_EXIT:
+	RET
+
 
 
 // Funcion que muestra en display
 
 PRINT_DISPLAY:
 
-CBI PORTB, 0 
-CBI PORTB, 1
-CBI PORTB, 2
-CBI PORTB, 3
 
 CPI control_display, 0
 BREQ PRINT_0 // ACTIVAR DISPLAY 1
+
 CPI control_display, 1
 BREQ PRINT_1 // ACTIVAR DISPLAY 2
+
 CPI control_display, 2
 BREQ PRINT_2 // ACTIVAR DISPLAY 3
+
 CPI control_display, 3
 BREQ PRINT_3 // ACTIVAR DISPLAY 3
 
 
-
 PRINT_0:
 
+// Imprimir en DISPLAY MINUTOS_U
+CBI PORTB, 0
+CBI PORTB, 1
+CBI PORTB, 2
+CBI PORTB, 3
 
-SBI PORTB, 3 // ACTIVAR DISPLAY 1 
-LDI R16, 0x01
-OUT PORTD, R16
+LDS R16, copia_0  // Cargar la copia  en R16
+LDI ZL, LOW(TABLA7SEG << 1)
+LDI ZH, HIGH(TABLA7SEG << 1)
+ADD ZL, R16 // Sumar la copia
+LPM R16, Z // pasar el resultado de la suma a R16
+OUT PORTD, R16  // Imprimir la copia
+
+SBI PORTB, 3
+
 
 PRINT_1:
 
-SBI PORTB, 2 // ACTIVAR DISPLAY 2 
 
+// Imprimir en DISPLAY MINUTOS_D
+CBI PORTB, 0
+CBI PORTB, 1
+CBI PORTB, 2
+CBI PORTB, 3
 
+LDS R16, copia_1		// Cargar copia_1
+LDI ZL, LOW(TABLA7SEG << 1)
+LDI ZH, HIGH(TABLA7SEG << 1)
+ADD ZL, R16				// Sumar copia 1
+LPM R16, Z
+OUT PORTD, r16
 
-OUT PORTD, R16
+SBI PORTB, 2
 
 PRINT_2:
 
-SBI PORTB, 1 // ACTIVAR DISPLAY 3 
+CBI PORTB, 0
+CBI PORTB, 1
+CBI PORTB, 2
+CBI PORTB, 3
 
+LDS R16, copia_2
+LDI ZL, LOW(TABLA7SEG << 1)
+LDI ZH, HIGH(TABLA7SEG << 1)
+ADD ZL, R16
+LPM R16, Z
+OUT PORTD, r16
 
-OUT PORTD, R16
+SBI PORTB, 1
 
 PRINT_3:
 
-SBI PORTB, 0 // ACTIVAR DISPLAY 4
+CBI PORTB, 0
+CBI PORTB, 1
+CBI PORTB, 2
+CBI PORTB, 3
 
-LDI R16, 0x00
+LDS R16, copia_3
+LDI ZL, LOW(TABLA7SEG << 1)
+LDI ZH, HIGH(TABLA7SEG << 1)
+ADD ZL, R16
+LPM R16, Z
 OUT PORTD, R16
 
-//OUT PORTD, horas_d
+SBI PORTB, 0
+
 
 
 PRINT_DISPLAY_EXIT:
