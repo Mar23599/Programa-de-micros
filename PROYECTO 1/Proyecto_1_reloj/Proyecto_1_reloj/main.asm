@@ -24,8 +24,8 @@
 // VARIABLES GLOBALES
 ;**************************************************************************************************
 
-.equ comparacion_1seg = 1 // 100: Numero que cuenta cada  10ms para alcanzar 1 segundos
-.equ CTC_TMR0_cuenta = 1 // 156: Numero hasta el que cuenta el timer0, en modo CTC
+.equ comparacion_1seg = 5 // 100: Numero que cuenta cada  10ms para alcanzar 1 segundos
+.equ CTC_TMR0_cuenta = 5 // 156: Numero hasta el que cuenta el timer0, en modo CTC
 
 
 ; R16: Se utilizara para variables temporales
@@ -71,10 +71,18 @@ mes_u: .byte 1
 mes_d: .byte 1
 
 
-
+contador_dias: .byte 1 // Contador de días
 contador_mes: .byte 1 // Contador de mes.
 dias_del_mes: .byte 1 // Guarda el valor al que debe de llegar el mes
 contador_horas: .byte 1 // Cuenta horas
+
+
+//Banderas de aumento y decremento. INC = 1, DEC = 2, NADA = 0
+
+bandera_minutos: .byte 1
+bandera_horas: .byte 1
+badera_dias: .byte 1
+bandera_mes: .byte 1
 
 copia_0: .byte 1
 copia_1: .byte 1
@@ -194,6 +202,7 @@ CLR control_display
 LDI R16, 0x01		// Setear en 1
 STS dias_u, R16		// Las unidades de día, empiezan en 1
 STS mes_u, R16		// Las unidades de día, empiezan en 1
+STS contador_dias, R16 // La cuenta de los días empieza en 1 día
 
 STS contador_mes, R16 // Contador_mes empieza en 1. 
 
@@ -201,6 +210,7 @@ LDI R16, 0x00
 STS dias_d, R16		// Las decenas de dia, empiezan en 0
 STS mes_d, R16		// Las decenas de dia, empiezan en 0
 STS contador_horas, R16 // La cuenta de horas empieza 0
+STS bandera_minutos, R16 // Bandera de minutos, empiezan en 0
 
 
 
@@ -217,6 +227,10 @@ SEI
 ;**************************************************************************************************
 
 LOOP:
+
+
+	CALL DATE_set_dias_del_mes // Funcion que coloca en el contador dias_del_mes la cantidad de dias del mes. :)
+	CALL DATE_cuenta_mes		// Funcion que actualiza el mes en función de los dias
 	CALL TIEMPO_cuenta		// Lleva la cuenta de TODO el timpo 
 	CALL COPY__FOR_MODE
 	CALL PRINT_DISPLAY
@@ -227,8 +241,6 @@ RJMP LOOP
 ;**************************************************************************************************
 //FUNCIONES
 ;**************************************************************************************************
-
-
 
 
 
@@ -248,22 +260,139 @@ PRINT_contador_modo:
 
 	RET
 
+
+//FUNCION QUE ACTUALIZA LOS MESES
+
+;***********************************************************************************************************************************
+DATE_cuenta_mes:
+
+	LDS R16, contador_dias // R16 = Contador_dias
+	LDS R15, dias_del_mes // R15 = dias_del_mes (calulado en la funcion anterior. Es el número de dias al que debe resetearse la actualizarse de meses)
+
+	CP R16, R15 
+	BRNE DATE_cuenta_mes_EXIT	// Si el contador_dias es diferente de dias_del_mes, SALIR y continuar como si nada ha pasado
+
+	//Si son iguales...
+
+	LDI R16, 1
+	STS contador_dias, R16		// Colocar cuenta de dias en 1
+	STS dias_u, R16			// Colcoar dias_u en 1
+
+	CLR R16
+	STS dias_d, R16 // Colocar dias_u en 0
+
+
+	LDS R16, contador_mes
+	INC R16
+	STS contador_mes, R16	// Aumentar contador_mes
+
+	LDS R16, mes_u
+	INC R16
+	
+
+	CPI R16, 10		// Revisar cuando se alcanzen los 10 meses
+	BRNE mes_u_set	//Sino han pasado 10 meses, salir
+
+	CLR R16
+	STS mes_u, R16 // Si pasaron 10 meses, regresar mes_u a 0
+
+	LDS R16, mes_d // Si pasaron 10 meses, incrementar mes_d
+	INC R16
+	
+	LDS R15, contador_mes
+
+	CP R16, R15	// Cuando hayan pasado 12 meses (1 año), regresar la cuenta 0d, 1u
+	BRNE mes_d_set
+
+
+
+	LDI R16, 1			//Regresar la cuenta a 01/01
+	STS mes_u, R16
+	STS contador_mes, R16
+
+	CLR R16
+	STS mes_d, R16
+
+	RJMP DATE_cuenta_mes_EXIT
+
+mes_u_set:
+	STS mes_u, R16 // Aumentar unidades de mes
+	RJMP DATE_cuenta_mes_EXIT
+
+mes_d_set:
+	STS mes_d, R16 // Aumentar decenas de mes
+	RJMP DATE_cuenta_mes_EXIT
+
+DATE_cuenta_mes_EXIT:
+	RET
+;***********************************************************************************************************************************
+
+
 // FUNCION QUE CUENTA TIEMPO
 
+
+;***********************************************************************************************************************************
 TIEMPO_cuenta:
 
+// REVISAR SI HAN PASADO 24 horas ----El contador_horas se encuentra mas abajo :)
 
 	LDS R16, contador_horas // revisar contador_horas
 	CPI R16, 24			// Comparar cuando llegue a 24
-	BRNE CONTAR_TIEMPO
+	BRNE CONTAR_TIEMPO // Si no ha llegado a 24 horas, continuar contando tiempo
 
 	CLR R16
-	STS contador_horas, R16
+	STS contador_horas, R16	// Resetear el contador de horas, cada que llegue a 24
 
 	CLR horas_u
 	CLR horas_d
 	CLR minutos_u
 	CLR minutos_d
+
+	;**** RUTINA PARA HACER CUENTAS SOBRE LA FECHA****
+
+	LDS R16, contador_dias // Cada 24 horas, incrementar el contador de días, pues ha pasado 1 día :)
+	INC R16
+	STS contador_dias, R16 // Actualizar contador_dias
+
+	LDS R16, dias_u
+	INC R16				 // Cada 24 horas, incrementar dias_u
+	CPI R16, 10
+	BRNE DATE_dias_u_EXIT // Si no han pasado 10 dias, no resetear la cuenta, pero actualizar días_u
+
+	CLR R16			// Cada 10 dias, resetear en 0 la cuenta de unidades
+	STS dias_u, R16		// Actualizar la cuenta de unidades de dias 
+
+
+	LDS R16, dias_d		// Cargar dias_d
+	INC R16		// Cada 10 dias, incrementar en 1 dias_d
+	
+	CPI R16, 10
+	BRNE DATE_dias_d_EXIT
+
+
+	// Cada vez que pasen 10 veces, 1 dias_d resetear la cuenta
+	CLR R16			// resetear a o la cuenta de decenas
+	STS dias_d, R16 // actualizar dias_u
+
+
+	// LOGICA PARA TOPAR LOS DIAS E INCREMENTAR LOS MESES EN OTRA FUNCIÓN
+
+
+	
+	RJMP CONTAR_TIEMPO
+	
+
+
+DATE_dias_u_EXIT:
+	STS dias_u, R16 // actualizar dias_u 
+	RJMP CONTAR_TIEMPO
+
+DATE_dias_d_EXIT:
+	STS dias_d, R16 // Actualizar dias_d
+	RJMP CONTAR_TIEMPO 
+
+
+	
 
 CONTAR_TIEMPO:
 
@@ -300,77 +429,86 @@ CONTAR_TIEMPO:
 	BRNE TIEMPO_cuenta_EXIT
 
 	CLR horas_d
+
+	// Incrementar las decenas de hora. Revisar el contador_horas sirve para resetear la cuenta. La cuenta se retea al incio de esta funcion :)
 	
 
 	RJMP TIEMPO_cuenta_EXIT
 
 
-;SET_MES:	// Esta función setea hasta cuantos días debe llegar el mes, en funcion de en que mes se encuentra
-;
-;	LDS R16, contador_mes // Cargar valor del mes a R16
-;
-;	CPI R16, 1 // Enero
-;	BREQ 31_dias
-;
-;	CPI R16, 2 // Febrero
-;	BREQ 28_dias
-;
-;	CPI R16, 3 // Marzo
-;	BREQ 31_dias
-;
-;	CPI R16, 4 // Abril
-;	BREQ 30_dias
-;
-;	CPI R16, 5 // Mayo
-;	BREQ 31_dias
-;
-;	CPI R16, 6 // Junio
-;	BREQ 30_dias	
-;
-;	CPI R16, 7 // Julio
-;	BREQ 31_dias
-;
-;	CPI R16, 8 // Agosto
-;	BREQ 31_dias
-;
-;	CPI R16, 9 // Septiembre
-;	BREQ 30_dias
-;
-;	CPI R16, 10 // Octubre
-;	BREQ 31_dias
-;
-;	CPI R16, 11 // Novimembre
-;	BREQ 30_dias
-;
-;	CPI R16, 12 // Diciembre
-;	BREQ 31_dias
-;	
-;
-;
-;28_dias:
-;	
-;	LDI R16, 28		// Configurar 28 dias como cantidad del días
-;	STS dias_del_mes, R16
-;	JMP SET_MES_EXIT
-;
-;30_dias:
-;
-;	LDI R16, 30		// Configurar 30 dias como cantidad del días
-;	STS dias_del_mes, R16
-;	JMP SET_MES_EXIT
-;
-;31_dias:
-;	
-;	LDI R16, 31 // Configurar 31 dias como cantidad del días
-;	STS dias_del_mes, R16
-;	JMP SET_MES_EXIT
-;
-;SET_MES_EXIT:
-;	RET
-;
 
 TIEMPO_cuenta_EXIT:
 	RET
+;***********************************************************************************************************************************
+
+
+;***********************************************************************************************************************************
+
+DATE_set_dias_del_mes: // Funcion que coloca en dias_del_mes la cantidad de dias del mes
+
+	LDS R16, contador_mes // Extraer el contador de mes. Este indica en que mes estamos. 
+
+	CPI R16, 1 
+	BREQ set_31 // Enero
+
+	CPI R16, 2	// Febrero
+	BREQ set_28
+
+	CPI R16, 3 // Marzo
+	BREQ set_31
+
+	CPI R16, 4		//Abril
+	BREQ set_30
+
+	CPI R16, 5 // Mayo
+	BREQ set_31
+
+	CPI R16, 6 // Junio
+	BREQ set_30
+
+	CPI R16, 7	// Julio
+	BREQ set_31
+
+	CPI R16, 8	// Agosto
+	BREQ set_31
+
+	CPI R16, 9 // septiembre
+	BREQ set_30
+
+	CPI R16, 10 // Octubre
+	BREQ set_31
+
+	CPI R16, 11	// Noviembre
+	BREQ set_30
+
+	CPI R16, 11 // Diciembre
+	BREQ set_31 
+
+
+set_31:
+
+	LDI R16, 32 // Colocar 30 dias 
+	STS dias_del_mes, R16 // Actualizar dias del mes :)
+	RET
+
+set_28:
+	
+	LDI R16, 29 // Colocar 28 dias 
+	STS dias_del_mes, R16 // Atualizar dias del mes ::
+	RET
+
+set_30:
+
+	LDI R16, 31 // Colocar 30 dias 
+	STS dias_del_mes, R16 // Atualizar dias del mes :)
+	RET
+
+
+
+
+
+;***********************************************************************************************************************************
+
 
 // Funcion que copia registros para imprimirlos en displays en funcion del modo
 COPY__FOR_MODE:
@@ -379,6 +517,8 @@ COPY__FOR_MODE:
 	BREQ view_time
 	CPI contador_modo, 1
 	BREQ view_date
+	CPI contador_modo, 2
+	BREQ configurar_minutos
 	
 	JMP COPY_FOR_MODE_EXIT
 
@@ -401,23 +541,26 @@ view_time: //Copiar contadores de hora, para mostrarlos
 
 view_date:
 
-	LDI R16, 0x00
-	;MOV R16, dia_u
+	LDS R16, dias_u
 	STS copia_0, R16 // Copiar dia_u en copia_0
 
-	LDI R16, 0x01
-	;MOV R16, dia_d
+	LDS R16, dias_d
 	STS copia_1, R16 // Copiar dia_d en copia_1
 
-	LDI R16, 0x02
-	;MOV R16, mes_u
+	LDS R16, mes_u
 	STS copia_2, R16 // Copiar mes_u en copia_2
 
-	LDS R16, contador_horas
-	;MOV R16, mes_d
+	LDS R16, mes_d
 	STS copia_3, R16 // Copiar mes_d en copia_3
 
 	RJMP COPY_FOR_MODE_EXIT
+
+configurar_minutos:
+	
+
+
+	RJMP COPY_FOR_MODE_EXIT
+
 
 
 COPY_FOR_MODE_EXIT:
@@ -517,7 +660,30 @@ PRINT_DISPLAY_EXIT:
 	RET
 
 	
+// Funcion que maneja banderas de incremento y decremento
 
+
+INC_minutos:
+	
+	INC minutos_u		//Incrementar minutos
+	
+	CLR R16
+	STS bandera_minutos, R16 // Limpiar bandera de minutos
+
+	JMP BANDERAS_MODO_EXIT
+
+DEC_minutos:
+	
+	DEC minutos_u
+
+	
+	CLR R16
+	STS bandera_minutos, R16 // Limpiar bandera de minutos
+
+	JMP BANDERAS_MODO_EXIT
+
+BANDERAS_MODO_EXIT:
+	RET
 	
 ;**************************************************************************************************
 // RUTINAS DE INTERRUPCIONES
@@ -539,6 +705,9 @@ CHECK_MODO_ISR:
 	CPI contador_modo, 1 // Cuando este en modo 1
 	BREQ modo_1_PC // Saltar a modo 1
 
+	CPI contador_modo, 2
+	BREQ modo_2_PC
+
 	RJMP ISP_PCI1_OUT
 	
 
@@ -547,8 +716,10 @@ modo_0_PC:
 modo_1_PC:
 	RJMP ISP_PCI1_OUT // En modo 0, los botones NO hacen nada. 
 
+modo_2_PC:
+	RJMP ISP_PCI1_OUT	// Por configurar
 
-	
+
 
 
 ISP_PCI1_OUT:
