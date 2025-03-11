@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm Sun Mar 09 19:40:14 2025
+AVRASM ver. 2.2.8  C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm Mon Mar 10 22:57:02 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto_1_reloj\Proyecto_1_reloj\main.asm(20): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328pdef.inc'
@@ -1056,7 +1056,7 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
                                  ;**************************************************************************************************
                                  
                                  .equ comparacion_1seg = 5 // 100: Numero que cuenta cada  10ms para alcanzar 1 segundos
-                                 .equ CTC_TMR0_cuenta = 5 // 156: Numero hasta el que cuenta el timer0, en modo CTC
+                                 .equ CTC_TMR0_cuenta = 10 // 156: Numero hasta el que cuenta el timer0, en modo CTC
                                  
                                  
                                  ; R16: Se utilizara para variables temporales
@@ -1135,9 +1135,9 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
                                  // Vectores de interrupcion
                                  ;**************************************************************************************************
                                  .org PCI1addr
-000008 940c 0183                 	JMP ISR_PCI1 
+000008 940c 01c8                 	JMP ISR_PCI1 
                                  .org OC0Aaddr // Vector de interrupcion por comparacion
-00001c 940c 0191                 	JMP ISR_CPMA // Rutina de interrupcion cada 10ms
+00001c 940c 01eb                 	JMP ISR_CPMA // Rutina de interrupcion cada 10ms
                                  
                                  
                                  // tablas; Se coloco aqui para evitar el problemas con los vectores de reset e interrupcion
@@ -1146,7 +1146,7 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
 00001f 4f5b
 000020 6d66
 000021 077d
-000022 6f7f                          .db 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F // tabla para display de 7 segmentos
+000022 6f7f                          .db 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F// tabla para display de 7 segmentos
                                  ;**************************************************************************************************
                                  // Configuracion de la pila
                                  ;**************************************************************************************************
@@ -1186,7 +1186,7 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
 000035 e004                      LDI R16, (1 << CS02)
 000036 bd05                      OUT TCCR0B, R16 // Configurar prescaler de 256 al timer0
                                  
-000037 e005                      LDI R16, CTC_TMR0_cuenta // 156
+000037 e00a                      LDI R16, CTC_TMR0_cuenta // 156
 000038 bd07                      OUT OCR0A, R16 // Configurar el valor de comparación: Calculado para que se compare a los 0.01s (10ms)
                                  
 000039 e002                      LDI R16, (1 << OCIE0A)
@@ -1268,8 +1268,9 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
 000067 940e 007c                 	CALL DATE_cuenta_mes		// Funcion que actualiza el mes en función de los dias
 000069 940e 00ae                 	CALL TIEMPO_cuenta		// Lleva la cuenta de TODO el timpo 
 00006b 940e 0115                 	CALL COPY__FOR_MODE
-00006d 940e 013d                 	CALL PRINT_DISPLAY
+00006d 940e 018f                 	CALL PRINT_DISPLAY
 00006f 940e 0072                 	CALL PRINT_contador_modo // Mostrar el contador de modo
+                                 ;	CALL CHECK_banderas
                                  
 000071 cff3                      RJMP LOOP
                                  
@@ -1548,58 +1549,164 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
                                  // Funcion que copia registros para imprimirlos en displays en funcion del modo
                                  COPY__FOR_MODE:
                                  
-000115 3010                      	CPI contador_modo, 0
-000116 f031                      	BREQ view_time
-000117 3011                      	CPI contador_modo, 1
-000118 f089                      	BREQ view_date
-000119 3012                      	CPI contador_modo, 2
-00011a f101                      	BREQ configurar_minutos
+                                 CP_modo_0:
+                                 
+000115 3010                      	CPI contador_modo, 0 // revisar si el modo = 0
+000116 f009                      	BREQ view_time
+000117 c00d                      	RJMP CP_modo_1 // Sino son iguales, seguir revisando
+                                 
+                                 	view_time: // La hora
+                                 
+000118 2f05                      	MOV R16, minutos_u
+000119 9300 010c                 	STS copia_0, R16 // Copiar minutos_u en copia_0
+                                 
+00011b 2f06                      	MOV R16, minutos_d
+00011c 9300 010d                 	STS copia_1, R16 // Copiar minutos_u en copia_1
+                                 
+00011e 2f07                      	MOV R16, horas_u
+00011f 9300 010e                 	STS copia_2, R16 // Copiar minutos_u en copia_2
+                                 
+000121 2f08                      	MOV R16, horas_d
+000122 9300 010f                 	STS copia_3, R16 // Copiar minutos_u en copia_3
                                  	
-00011b 940c 013c                 	JMP COPY_FOR_MODE_EXIT
+000124 c069                      	RJMP COPY_FOR_MODE_EXIT
                                  
-                                 view_time: //Copiar contadores de hora, para mostrarlos
                                  
-00011d 2f05                      	MOV R16, minutos_u
-00011e 9300 010c                 	STS copia_0, R16 // Copiar minutos_u en copia_0
+                                 CP_modo_1:
                                  
-000120 2f06                      	MOV R16, minutos_d
-000121 9300 010d                 	STS copia_1, R16 // Copiar minutos_u en copia_1
+000125 3011                      	CPI contador_modo, 1 // Revisar si estamos en modo 1
+000126 f011                      	BREQ view_date
+000127 940c 013a                 	JMP CP_modo_2		// Sino son iguales, revisar modo 2
                                  
-000123 2f07                      	MOV R16, horas_u
-000124 9300 010e                 	STS copia_2, R16 // Copiar minutos_u en copia_2
+                                 	view_date: // Mostrar la fecha
+000129 9100 0102                 	LDS R16, mes_u
+00012b 9300 010c                 	STS copia_0, R16 // Copiar dia_u en copia_0
                                  
-000126 2f08                      	MOV R16, horas_d
-000127 9300 010f                 	STS copia_3, R16 // Copiar minutos_u en copia_3
+00012d 9100 0103                 	LDS R16, mes_d
+00012f 9300 010d                 	STS copia_1, R16 // Copiar dia_d en copia_1
+                                 
+000131 9100 0100                 	LDS R16, dias_u
+000133 9300 010e                 	STS copia_2, R16 // Copiar mes_u en copia_2
+                                 
+000135 9100 0101                 	LDS R16, dias_d
+000137 9300 010f                 	STS copia_3, R16 // Copiar mes_d en copia_3
+                                 
+000139 c054                      	RJMP COPY_FOR_MODE_EXIT
+                                 
+                                 
+                                 
+                                 CP_modo_2:
+00013a 3012                      	CPI contador_modo, 2
+00013b f011                      	BREQ CONFI_minutos
+00013c 940c 014b                 	JMP CP_modo_3
+                                 
+                                 	CONFI_minutos:
+00013e 2f05                      	MOV R16, minutos_u
+00013f 9300 010c                 	STS copia_0, R16 // Copiar minutos_u en copia_0
+                                 
+000141 2f06                      	MOV R16, minutos_d
+000142 9300 010d                 	STS copia_1, R16 // Copiar minutos_d en copia_1
+                                 
+000144 e00a                      	LDI R16, 10
+000145 9300 010e                 	STS copia_2, R16 // No mostrar las horas, pues estamos en configuración de minutos
+                                 
+000147 e00a                      	LDI R16, 10
+000148 9300 010f                 	STS copia_3, R16 // No mostrar las horas, pues estamos en configuración de minutos
                                  	
-000129 c012                      	RJMP COPY_FOR_MODE_EXIT
+00014a c043                      	RJMP COPY_FOR_MODE_EXIT
                                  
                                  
-                                 view_date:
+                                 CP_modo_3:
+00014b 3013                      	CPI contador_modo, 3
+00014c f011                      	BREQ CONFI_horas
+00014d 940c 015c                 	JMP CP_modo_4
                                  
-00012a 9100 0100                 	LDS R16, dias_u
-00012c 9300 010c                 	STS copia_0, R16 // Copiar dia_u en copia_0
                                  
-00012e 9100 0101                 	LDS R16, dias_d
-000130 9300 010d                 	STS copia_1, R16 // Copiar dia_d en copia_1
+                                 	CONFI_horas:
+00014f e00a                      	LDI R16, 10
+000150 9300 010c                 	STS copia_0, R16 // No mostrar minutos, pues estamos configurando horas
                                  
-000132 9100 0102                 	LDS R16, mes_u
-000134 9300 010e                 	STS copia_2, R16 // Copiar mes_u en copia_2
+000152 e00a                      	LDI R16, 10
+000153 9300 010d                 	STS copia_1, R16 // No mostrar minutos, pues estamos configurando horas
                                  
-000136 9100 0103                 	LDS R16, mes_d
-000138 9300 010f                 	STS copia_3, R16 // Copiar mes_d en copia_3
+000155 2f07                      	MOV R16, horas_u
+000156 9300 010e                 	STS copia_2, R16 // Copiar horas_u en copia_2
                                  
-00013a c001                      	RJMP COPY_FOR_MODE_EXIT
-                                 
-                                 configurar_minutos:
+000158 2f08                      	MOV R16, horas_d
+000159 9300 010f                 	STS copia_3, R16 // Copiar horas_d en copia_3
                                  	
+00015b c032                      	RJMP COPY_FOR_MODE_EXIT
                                  
                                  
-00013b c000                      	RJMP COPY_FOR_MODE_EXIT
+                                 CP_modo_4:
+00015c 3014                      	CPI contador_modo, 4
+00015d f011                      	BREQ CONFI_dias
+00015e 940c 016f                 	JMP CP_modo_5
+                                 
+                                 	CONFI_dias:
+                                 
+000160 9100 0100                 	LDS R16, dias_u
+000162 9300 010c                 	STS copia_0, R16 // Copiar dias_u en copia_0
+                                 
+000164 9100 0101                 	LDS R16, dias_d
+000166 9300 010d                 	STS copia_1, R16 // Copiar dias_d en copia_1
+                                 
+000168 e00a                      	LDI R16, 10
+000169 9300 010e                 	STS copia_2, R16 // No mostrar mes pues estamos en configuración de dias
+                                 
+00016b e00a                      	LDI R16, 10
+00016c 9300 010f                 	STS copia_3, R16 // No mostrar mes, pues estamos en configuración de dias
+                                 
+00016e c01f                      	RJMP COPY_FOR_MODE_EXIT
+                                 
+                                 
+                                 CP_modo_5:
+00016f 3015                      	CPI contador_modo, 5
+000170 f011                      	BREQ CONFI_mes
+000171 940c 0182                 	JMP CP_modo_6
+                                 
+                                 	CONFI_mes:
+000173 e00a                      	LDI R16, 10
+000174 9300 010c                 	STS copia_0, R16 // No mostrar dias, pues estamos configurando mes
+                                 
+000176 e00a                      	LDI R16, 10
+000177 9300 010d                 	STS copia_1, R16 // No mostrar dias, pues estamos configurando mes
+                                 
+000179 9100 0102                 	LDS R16, mes_u
+00017b 9300 010e                 	STS copia_2, R16 // Copiar horas_u en copia_2
+                                 
+00017d 9100 0103                 	LDS R16, mes_d
+00017f 9300 010f                 	STS copia_3, R16 // Copiar horas_d en copia_3
+                                 	
+000181 c00c                      	RJMP COPY_FOR_MODE_EXIT
+                                 
+                                 
+                                 CP_modo_6:
+000182 3016                      	CPI contador_modo, 6
+000183 f011                      	BREQ CONFI_ALARMA
+000184 940c 0187                 	JMP CP_modo_7
+                                 
+                                 	CONFI_alarma:
+                                 	
+000186 c007                      	RJMP COPY_FOR_MODE_EXIT
+                                 
+                                 
+                                 CP_modo_7:
+000187 3017                      	CPI contador_modo, 7
+000188 f011                      	BREQ CONFI_modo7
+000189 940c 018e                 	JMP COPY_FOR_MODE_EXIT
+                                 
+                                 	CONFI_modo7:
+                                 	
+00018b c002                      	RJMP COPY_FOR_MODE_EXIT
+                                 
+                                 	
+00018c 940c 018e                 	JMP COPY_FOR_MODE_EXIT
                                  
                                  
                                  
                                  COPY_FOR_MODE_EXIT:
-00013c 9508                      	RET
+00018e 9508                      	RET
                                  
                                  
                                  
@@ -1608,117 +1715,95 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
                                  PRINT_DISPLAY:
                                  
                                  
-00013d 3090                      CPI control_display, 0
-00013e f031                      BREQ PRINT_0 // ACTIVAR DISPLAY 1
                                  
-00013f 3091                      CPI control_display, 1
-000140 f081                      BREQ PRINT_1 // ACTIVAR DISPLAY 2
+00018f 3090                      CPI control_display, 0
+000190 f031                      BREQ PRINT_0 // ACTIVAR DISPLAY 1
                                  
-000141 3092                      CPI control_display, 2
-000142 f0d1                      BREQ PRINT_2 // ACTIVAR DISPLAY 3
+000191 3091                      CPI control_display, 1
+000192 f081                      BREQ PRINT_1 // ACTIVAR DISPLAY 2
                                  
-000143 3093                      CPI control_display, 3
-000144 f121                      BREQ PRINT_3 // ACTIVAR DISPLAY 3
+000193 3092                      CPI control_display, 2
+000194 f0d1                      BREQ PRINT_2 // ACTIVAR DISPLAY 3
+                                 
+000195 3093                      CPI control_display, 3
+000196 f121                      BREQ PRINT_3 // ACTIVAR DISPLAY 3
                                  
                                  
                                  PRINT_0:
                                  
-                                 // Imprimir en DISPLAY MINUTOS_U
-000145 9828                      CBI PORTB, 0
-000146 9829                      CBI PORTB, 1
-000147 982a                      CBI PORTB, 2
-000148 982b                      CBI PORTB, 3
-                                 
-000149 9100 010c                 LDS R16, copia_0  // Cargar la copia  en R16
-00014b e3ec                      LDI ZL, LOW(TABLA7SEG << 1)
-00014c e0f0                      LDI ZH, HIGH(TABLA7SEG << 1)
-00014d 0fe0                      ADD ZL, R16 // Sumar la copia
-00014e 9104                      LPM R16, Z // pasar el resultado de la suma a R16
-00014f b90b                      OUT PORTD, R16  // Imprimir la copia
-                                 
-000150 9a2b                      SBI PORTB, 3
+                                 	// Imprimir en DISPLAY MINUTOS_U
+000197 9828                      	CBI PORTB, 0
+000198 9829                      	CBI PORTB, 1
+000199 982a                      	CBI PORTB, 2
+00019a 982b                      	CBI PORTB, 3
+                                 	
+00019b 9100 010c                 	LDS R16, copia_0  // Cargar la copia  en R16
+00019d e3ec                      	LDI ZL, LOW(TABLA7SEG << 1)
+00019e e0f0                      	LDI ZH, HIGH(TABLA7SEG << 1)
+00019f 0fe0                      	ADD ZL, R16 // Sumar la copia
+0001a0 9104                      	LPM R16, Z // pasar el resultado de la suma a R16
+0001a1 b90b                      	OUT PORTD, R16  // Imprimir la copia
+                                 	
+0001a2 9a2b                      	SBI PORTB, 3
                                  
                                  
                                  PRINT_1:
-                                 
-                                 
-                                 // Imprimir en DISPLAY MINUTOS_D
-000151 9828                      CBI PORTB, 0
-000152 9829                      CBI PORTB, 1
-000153 982a                      CBI PORTB, 2
-000154 982b                      CBI PORTB, 3
-                                 
-000155 9100 010d                 LDS R16, copia_1		// Cargar copia_1
-000157 e3ec                      LDI ZL, LOW(TABLA7SEG << 1)
-000158 e0f0                      LDI ZH, HIGH(TABLA7SEG << 1)
-000159 0fe0                      ADD ZL, R16				// Sumar copia 1
-00015a 9104                      LPM R16, Z
-00015b b90b                      OUT PORTD, r16
-                                 
-00015c 9a2a                      SBI PORTB, 2
+                                 	
+0001a3 9828                      	CBI PORTB, 0
+0001a4 9829                      	CBI PORTB, 1
+0001a5 982a                      	CBI PORTB, 2
+0001a6 982b                      	CBI PORTB, 3
+                                 	
+                                 	// Imprimir en DISPLAY MINUTOS_D
+                                 	
+0001a7 9100 010d                 	LDS R16, copia_1		// Cargar copia_1
+0001a9 e3ec                      	LDI ZL, LOW(TABLA7SEG << 1)
+0001aa e0f0                      	LDI ZH, HIGH(TABLA7SEG << 1)
+0001ab 0fe0                      	ADD ZL, R16				// Sumar copia 1
+0001ac 9104                      	LPM R16, Z
+0001ad b90b                      	OUT PORTD, r16
+                                 	
+0001ae 9a2a                      	SBI PORTB, 2
                                  
                                  PRINT_2:
-                                 
-00015d 9828                      CBI PORTB, 0
-00015e 9829                      CBI PORTB, 1
-00015f 982a                      CBI PORTB, 2
-000160 982b                      CBI PORTB, 3
-                                 
-000161 9100 010e                 LDS R16, copia_2
-000163 e3ec                      LDI ZL, LOW(TABLA7SEG << 1)
-000164 e0f0                      LDI ZH, HIGH(TABLA7SEG << 1)
-000165 0fe0                      ADD ZL, R16
-000166 9104                      LPM R16, Z
-000167 b90b                      OUT PORTD, r16
-                                 
-000168 9a29                      SBI PORTB, 1
+0001af 9828                      	CBI PORTB, 0
+0001b0 9829                      	CBI PORTB, 1
+0001b1 982a                      	CBI PORTB, 2
+0001b2 982b                      	CBI PORTB, 3
+                                 	
+0001b3 9100 010e                 	LDS R16, copia_2
+0001b5 e3ec                      	LDI ZL, LOW(TABLA7SEG << 1)
+0001b6 e0f0                      	LDI ZH, HIGH(TABLA7SEG << 1)
+0001b7 0fe0                      	ADD ZL, R16
+0001b8 9104                      	LPM R16, Z
+0001b9 b90b                      	OUT PORTD, r16
+                                 	
+0001ba 9a29                      	SBI PORTB, 1
                                  
                                  PRINT_3:
-                                 
-000169 9828                      CBI PORTB, 0
-00016a 9829                      CBI PORTB, 1
-00016b 982a                      CBI PORTB, 2
-00016c 982b                      CBI PORTB, 3
-                                 
-00016d 9100 010f                 LDS R16, copia_3
-00016f e3ec                      LDI ZL, LOW(TABLA7SEG << 1)
-000170 e0f0                      LDI ZH, HIGH(TABLA7SEG << 1)
-000171 0fe0                      ADD ZL, R16
-000172 9104                      LPM R16, Z
-000173 b90b                      OUT PORTD, R16
-                                 
-000174 9a28                      SBI PORTB, 0
-                                 
-                                 
+                                 	
+0001bb 9828                      	CBI PORTB, 0
+0001bc 9829                      	CBI PORTB, 1
+0001bd 982a                      	CBI PORTB, 2
+0001be 982b                      	CBI PORTB, 3
+                                 	
+0001bf 9100 010f                 	LDS R16, copia_3
+0001c1 e3ec                      	LDI ZL, LOW(TABLA7SEG << 1)
+0001c2 e0f0                      	LDI ZH, HIGH(TABLA7SEG << 1)
+0001c3 0fe0                      	ADD ZL, R16
+0001c4 9104                      	LPM R16, Z
+0001c5 b90b                      	OUT PORTD, R16
+                                 	
+0001c6 9a28                      	SBI PORTB, 0
+                                 	
                                  
                                  PRINT_DISPLAY_EXIT:
-000175 9508                      	RET
+0001c7 9508                      	RET
                                  
                                  	
                                  // Funcion que maneja banderas de incremento y decremento
                                  
                                  
-                                 INC_minutos:
-                                 	
-000176 9553                      	INC minutos_u		//Incrementar minutos
-                                 	
-000177 2700                      	CLR R16
-000178 9300 0108                 	STS bandera_minutos, R16 // Limpiar bandera de minutos
-                                 
-00017a 940c 0182                 	JMP BANDERAS_MODO_EXIT
-                                 
-                                 DEC_minutos:
-                                 	
-00017c 955a                      	DEC minutos_u
-                                 
-                                 	
-00017d 2700                      	CLR R16
-00017e 9300 0108                 	STS bandera_minutos, R16 // Limpiar bandera de minutos
-                                 
-000180 940c 0182                 	JMP BANDERAS_MODO_EXIT
-                                 
-                                 BANDERAS_MODO_EXIT:
-000182 9508                      	RET
                                  	
                                  ;**************************************************************************************************
                                  // RUTINAS DE INTERRUPCIONES
@@ -1727,64 +1812,101 @@ C:\Users\aleja\OneDrive\Documentos\GitHub\Programa-de-micros\PROYECTO 1\Proyecto
                                  
                                  ISR_PCI1:
                                  
-000183 9b30                      	SBIS PINC, PC0 // Revisa cuando se presione el boton
-000184 9513                      	INC contador_modo
-000185 7017                      	ANDI contador_modo, 0x07 // Mascara para regresar a 0 cada vez que se alcanze 0.
+0001c8 9b30                      	SBIS PINC, PC0 // Revisa cuando se presione el boton
+0001c9 9513                      	INC contador_modo
+0001ca 7017                      	ANDI contador_modo, 0x07 // Mascara para regresar a 0 cada vez que se alcanze 0.
                                  
                                  
                                  CHECK_MODO_ISR:
                                  
-000186 3010                      	CPI contador_modo, 0 // Cuando este en modo 0
-000187 f029                      	BREQ modo_0_PC	// Saltar a modo 0
+0001cb 3010                      	CPI contador_modo, 0 // Cuando este en modo 0
+0001cc f079                      	BREQ modo_0_PC	// Saltar a modo 0
                                  	
-000188 3011                      	CPI contador_modo, 1 // Cuando este en modo 1
-000189 f021                      	BREQ modo_1_PC // Saltar a modo 1
+0001cd 3011                      	CPI contador_modo, 1 // Cuando este en modo 1
+0001ce f071                      	BREQ modo_1_PC // Saltar a modo 1
                                  
-00018a 3012                      	CPI contador_modo, 2
-00018b f019                      	BREQ modo_2_PC
+0001cf 3012                      	CPI contador_modo, 2
+0001d0 f069                      	BREQ modo_2_PC
                                  
-00018c c003                      	RJMP ISP_PCI1_OUT
+0001d1 3013                      	CPI contador_modo, 3
+0001d2 f091                      	BREQ modo_3_PC
+                                 
+0001d3 3014                      	CPI contador_modo, 4
+0001d4 f089                      	BREQ modo_4_PC
+                                 
+0001d5 3015                      	CPI contador_modo, 5
+0001d6 f081                      	BREQ modo_5_PC
+                                 
+0001d7 3016                      	CPI contador_modo, 6
+0001d8 f079                      	BREQ modo_6_PC
+                                 
+0001d9 3017                      	CPI contador_modo, 7
+0001da f071                      	BREQ modo_7_PC
+                                 
+                                 
+                                 	
+                                 
+0001db c00e                      	RJMP ISP_PCI1_OUT
                                  	
                                  
                                  modo_0_PC:
-00018d c002                      	RJMP ISP_PCI1_OUT // En modo 0, los botones NO hacen nada. 
+0001dc c00d                      	RJMP ISP_PCI1_OUT // En modo 0, los botones NO hacen nada. 
                                  modo_1_PC:
-00018e c001                      	RJMP ISP_PCI1_OUT // En modo 0, los botones NO hacen nada. 
+0001dd c00c                      	RJMP ISP_PCI1_OUT // En modo 0, los botones NO hacen nada. 
                                  
                                  modo_2_PC:
-00018f c000                      	RJMP ISP_PCI1_OUT	// Por configurar
                                  
+0001de 9b31                      	SBIS PINC, PC1 // Revisa cuando se presione el boton
+0001df e001                      	LDI R16, 1
+0001e0 9b32                      	SBIS PINC, PC2
+0001e1 e002                      	LDI R16, 2
                                  
+0001e2 9300 0108                 	STS bandera_minutos, R16
+                                 	
+0001e4 c005                      	RJMP ISP_PCI1_OUT	// Por configurar
+                                 
+                                 modo_3_PC:
+0001e5 c004                      	RJMP ISP_PCI1_OUT	// Por configurar
+                                 
+                                 modo_4_PC:
+0001e6 c003                      	RJMP ISP_PCI1_OUT	// Por configurar
+                                 
+                                 modo_5_PC:
+0001e7 c002                      	RJMP ISP_PCI1_OUT	// Por configurar
+                                 
+                                 modo_6_PC:
+0001e8 c001                      	RJMP ISP_PCI1_OUT	// Por configurar
+                                 
+                                 modo_7_PC:
+0001e9 c000                      	RJMP ISP_PCI1_OUT	// Por configurar
                                  
                                  
                                  ISP_PCI1_OUT:
-000190 9518                      RETI
+0001ea 9518                      RETI
                                  
                                  
                                  // Rutina de interrupcion por comparación (sucede cada 10ms)
                                  ISR_CPMA:
                                  
-000191 9593                      	INC control_display
-000192 3094                      	CPI control_display, 4
-000193 f409                      	BRNE TIEMPO_cuenta_segundo
-000194 2799                      	CLR control_display
+0001eb 9593                      	INC control_display
+0001ec 3094                      	CPI control_display, 4
+0001ed f409                      	BRNE TIEMPO_cuenta_segundo
+0001ee 2799                      	CLR control_display
                                  
                                  
                                  TIEMPO_cuenta_segundo:
                                  
                                  	// Cada 10ms incrementar el contador hasta alcanzar 1 segundo. 
-000195 9533                      	INC contador_1_seg // Incrementar el contador cada 10ms
-000196 3035                      	CPI contador_1_seg, comparacion_1seg// Comparar el contador con 100. Cuando sean iguales, habrá pasado 1 segundo
-000197 f411                      	BRNE ISR_CPMA_OUT // Cuando no sean iguales, salir. si son iguales...
+0001ef 9533                      	INC contador_1_seg // Incrementar el contador cada 10ms
+0001f0 3035                      	CPI contador_1_seg, comparacion_1seg// Comparar el contador con 100. Cuando sean iguales, habrá pasado 1 segundo
+0001f1 f411                      	BRNE ISR_CPMA_OUT // Cuando no sean iguales, salir. si son iguales...
                                  	
-000198 2733                      	CLR contador_1_seg // LIMPIAR el contador de 1 seg, cada que este se alcanze para reiniciar la cuenta. 
-000199 9543                      	INC contador_60_seg // Cada que pasa 1 segundo, aumentar el contador de 60segundos. Este se limpia en otra funcion. 
+0001f2 2733                      	CLR contador_1_seg // LIMPIAR el contador de 1 seg, cada que este se alcanze para reiniciar la cuenta. 
+0001f3 9543                      	INC contador_60_seg // Cada que pasa 1 segundo, aumentar el contador de 60segundos. Este se limpia en otra funcion. 
                                  
                                  	
                                  
                                  ISR_CPMA_OUT:
-00019a 9518                      	RETI
-                                 
 
 
 RESOURCE USE INFORMATION
@@ -1804,37 +1926,37 @@ counted separately from r26..r31 here.
 "ATmega328P" register use summary:
 x  :   0 y  :   0 z  :   4 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   4 r16: 143 r17:  12 r18:   0 r19:   4 r20:   4 
-r21:   8 r22:   6 r23:   6 r24:   6 r25:   8 r26:   0 r27:   0 r28:   0 
+r13:   0 r14:   0 r15:   4 r16: 174 r17:  22 r18:   0 r19:   4 r20:   4 
+r21:   7 r22:   7 r23:   7 r24:   7 r25:   8 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   8 r31:   4 
 Registers used: 13 out of 35 (37.1%)
 
 "ATmega328P" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   4 adiw  :   0 and   :   0 
 andi  :   1 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 break :   0 breq  :  22 brge  :   0 brhc  :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :  32 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
 brne  :  13 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
 brvs  :   0 bset  :   0 bst   :   0 call  :   6 cbi   :  19 cbr   :   0 
-clc   :   0 clh   :   0 cli   :   1 cln   :   0 clr   :  27 cls   :   0 
+clc   :   0 clh   :   0 cli   :   1 cln   :   0 clr   :  25 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   2 cpc   :   0 
-cpi   :  33 cpse  :   0 dec   :   1 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :  16 jmp   :   6 
-ld    :   0 ldd   :   0 ldi   :  30 lds   :  20 lpm   :   8 lsl   :   0 
-lsr   :   0 mov   :   4 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
+cpi   :  43 cpse  :   0 dec   :   0 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :  15 jmp   :  11 
+ld    :   0 ldd   :   0 ldi   :  40 lds   :  24 lpm   :   8 lsl   :   0 
+lsr   :   0 mov   :   8 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
 neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  13 pop   :   0 
-push  :   0 rcall :   0 ret   :   9 reti  :   2 rjmp  :  15 rol   :   0 
-ror   :   0 sbc   :   0 sbci  :   0 sbi   :   7 sbic  :   0 sbis  :   1 
+push  :   0 rcall :   0 ret   :   8 reti  :   2 rjmp  :  26 rol   :   0 
+ror   :   0 sbc   :   0 sbci  :   0 sbi   :   7 sbic  :   0 sbis  :   3 
 sbiw  :   0 sbr   :   0 sbrc  :   3 sbrs  :   0 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :  45 
+sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :  60 
 sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 26 out of 113 (23.0%)
+Instructions used: 25 out of 113 (22.1%)
 
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000336    764     10    774   32768   2.4%
+[.cseg] 0x000000 0x0003ea    944     10    954   32768   2.9%
 [.dseg] 0x000100 0x000110      0     16     16    2048   0.8%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 

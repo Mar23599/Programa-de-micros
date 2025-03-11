@@ -25,7 +25,7 @@
 ;**************************************************************************************************
 
 .equ comparacion_1seg = 5 // 100: Numero que cuenta cada  10ms para alcanzar 1 segundos
-.equ CTC_TMR0_cuenta = 5 // 156: Numero hasta el que cuenta el timer0, en modo CTC
+.equ CTC_TMR0_cuenta = 10 // 156: Numero hasta el que cuenta el timer0, en modo CTC
 
 
 ; R16: Se utilizara para variables temporales
@@ -111,7 +111,7 @@ copia_3: .byte 1
 
 // tablas; Se coloco aqui para evitar el problemas con los vectores de reset e interrupcion
 TABLA7SEG:
-    .db 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F // tabla para display de 7 segmentos
+    .db 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F// tabla para display de 7 segmentos
 ;**************************************************************************************************
 // Configuracion de la pila
 ;**************************************************************************************************
@@ -235,6 +235,7 @@ LOOP:
 	CALL COPY__FOR_MODE
 	CALL PRINT_DISPLAY
 	CALL PRINT_contador_modo // Mostrar el contador de modo
+;	CALL CHECK_banderas
 
 RJMP LOOP
 
@@ -513,16 +514,13 @@ set_30:
 // Funcion que copia registros para imprimirlos en displays en funcion del modo
 COPY__FOR_MODE:
 
-	CPI contador_modo, 0
-	BREQ view_time
-	CPI contador_modo, 1
-	BREQ view_date
-	CPI contador_modo, 2
-	BREQ configurar_minutos
-	
-	JMP COPY_FOR_MODE_EXIT
+CP_modo_0:
 
-view_time: //Copiar contadores de hora, para mostrarlos
+	CPI contador_modo, 0 // revisar si el modo = 0
+	BREQ view_time
+	RJMP CP_modo_1 // Sino son iguales, seguir revisando
+
+	view_time: // La hora
 
 	MOV R16, minutos_u
 	STS copia_0, R16 // Copiar minutos_u en copia_0
@@ -539,27 +537,136 @@ view_time: //Copiar contadores de hora, para mostrarlos
 	RJMP COPY_FOR_MODE_EXIT
 
 
-view_date:
+CP_modo_1:
 
-	LDS R16, dias_u
+	CPI contador_modo, 1 // Revisar si estamos en modo 1
+	BREQ view_date
+	JMP CP_modo_2		// Sino son iguales, revisar modo 2
+
+	view_date: // Mostrar la fecha
+	LDS R16, mes_u
 	STS copia_0, R16 // Copiar dia_u en copia_0
 
-	LDS R16, dias_d
+	LDS R16, mes_d
 	STS copia_1, R16 // Copiar dia_d en copia_1
 
-	LDS R16, mes_u
+	LDS R16, dias_u
 	STS copia_2, R16 // Copiar mes_u en copia_2
 
-	LDS R16, mes_d
+	LDS R16, dias_d
 	STS copia_3, R16 // Copiar mes_d en copia_3
 
 	RJMP COPY_FOR_MODE_EXIT
 
-configurar_minutos:
-	
 
+
+CP_modo_2:
+	CPI contador_modo, 2
+	BREQ CONFI_minutos
+	JMP CP_modo_3
+
+	CONFI_minutos:
+	MOV R16, minutos_u
+	STS copia_0, R16 // Copiar minutos_u en copia_0
+
+	MOV R16, minutos_d
+	STS copia_1, R16 // Copiar minutos_d en copia_1
+
+	LDI R16, 10
+	STS copia_2, R16 // No mostrar las horas, pues estamos en configuración de minutos
+
+	LDI R16, 10
+	STS copia_3, R16 // No mostrar las horas, pues estamos en configuración de minutos
+	
+	RJMP COPY_FOR_MODE_EXIT
+
+
+CP_modo_3:
+	CPI contador_modo, 3
+	BREQ CONFI_horas
+	JMP CP_modo_4
+
+
+	CONFI_horas:
+	LDI R16, 10
+	STS copia_0, R16 // No mostrar minutos, pues estamos configurando horas
+
+	LDI R16, 10
+	STS copia_1, R16 // No mostrar minutos, pues estamos configurando horas
+
+	MOV R16, horas_u
+	STS copia_2, R16 // Copiar horas_u en copia_2
+
+	MOV R16, horas_d
+	STS copia_3, R16 // Copiar horas_d en copia_3
+	
+	RJMP COPY_FOR_MODE_EXIT
+
+
+CP_modo_4:
+	CPI contador_modo, 4
+	BREQ CONFI_dias
+	JMP CP_modo_5
+
+	CONFI_dias:
+
+	LDS R16, dias_u
+	STS copia_0, R16 // Copiar dias_u en copia_0
+
+	LDS R16, dias_d
+	STS copia_1, R16 // Copiar dias_d en copia_1
+
+	LDI R16, 10
+	STS copia_2, R16 // No mostrar mes pues estamos en configuración de dias
+
+	LDI R16, 10
+	STS copia_3, R16 // No mostrar mes, pues estamos en configuración de dias
 
 	RJMP COPY_FOR_MODE_EXIT
+
+
+CP_modo_5:
+	CPI contador_modo, 5
+	BREQ CONFI_mes
+	JMP CP_modo_6
+
+	CONFI_mes:
+	LDI R16, 10
+	STS copia_0, R16 // No mostrar dias, pues estamos configurando mes
+
+	LDI R16, 10
+	STS copia_1, R16 // No mostrar dias, pues estamos configurando mes
+
+	LDS R16, mes_u
+	STS copia_2, R16 // Copiar horas_u en copia_2
+
+	LDS R16, mes_d
+	STS copia_3, R16 // Copiar horas_d en copia_3
+	
+	RJMP COPY_FOR_MODE_EXIT
+
+
+CP_modo_6:
+	CPI contador_modo, 6
+	BREQ CONFI_ALARMA
+	JMP CP_modo_7
+
+	CONFI_alarma:
+	
+	RJMP COPY_FOR_MODE_EXIT
+
+
+CP_modo_7:
+	CPI contador_modo, 7
+	BREQ CONFI_modo7
+	JMP COPY_FOR_MODE_EXIT
+
+	CONFI_modo7:
+	
+	RJMP COPY_FOR_MODE_EXIT
+
+	
+	JMP COPY_FOR_MODE_EXIT
 
 
 
@@ -571,6 +678,7 @@ COPY_FOR_MODE_EXIT:
 // Funcion que muestra en display
 
 PRINT_DISPLAY:
+
 
 
 CPI control_display, 0
@@ -588,73 +696,71 @@ BREQ PRINT_3 // ACTIVAR DISPLAY 3
 
 PRINT_0:
 
-// Imprimir en DISPLAY MINUTOS_U
-CBI PORTB, 0
-CBI PORTB, 1
-CBI PORTB, 2
-CBI PORTB, 3
-
-LDS R16, copia_0  // Cargar la copia  en R16
-LDI ZL, LOW(TABLA7SEG << 1)
-LDI ZH, HIGH(TABLA7SEG << 1)
-ADD ZL, R16 // Sumar la copia
-LPM R16, Z // pasar el resultado de la suma a R16
-OUT PORTD, R16  // Imprimir la copia
-
-SBI PORTB, 3
+	// Imprimir en DISPLAY MINUTOS_U
+	CBI PORTB, 0
+	CBI PORTB, 1
+	CBI PORTB, 2
+	CBI PORTB, 3
+	
+	LDS R16, copia_0  // Cargar la copia  en R16
+	LDI ZL, LOW(TABLA7SEG << 1)
+	LDI ZH, HIGH(TABLA7SEG << 1)
+	ADD ZL, R16 // Sumar la copia
+	LPM R16, Z // pasar el resultado de la suma a R16
+	OUT PORTD, R16  // Imprimir la copia
+	
+	SBI PORTB, 3
 
 
 PRINT_1:
-
-
-// Imprimir en DISPLAY MINUTOS_D
-CBI PORTB, 0
-CBI PORTB, 1
-CBI PORTB, 2
-CBI PORTB, 3
-
-LDS R16, copia_1		// Cargar copia_1
-LDI ZL, LOW(TABLA7SEG << 1)
-LDI ZH, HIGH(TABLA7SEG << 1)
-ADD ZL, R16				// Sumar copia 1
-LPM R16, Z
-OUT PORTD, r16
-
-SBI PORTB, 2
+	
+	CBI PORTB, 0
+	CBI PORTB, 1
+	CBI PORTB, 2
+	CBI PORTB, 3
+	
+	// Imprimir en DISPLAY MINUTOS_D
+	
+	LDS R16, copia_1		// Cargar copia_1
+	LDI ZL, LOW(TABLA7SEG << 1)
+	LDI ZH, HIGH(TABLA7SEG << 1)
+	ADD ZL, R16				// Sumar copia 1
+	LPM R16, Z
+	OUT PORTD, r16
+	
+	SBI PORTB, 2
 
 PRINT_2:
-
-CBI PORTB, 0
-CBI PORTB, 1
-CBI PORTB, 2
-CBI PORTB, 3
-
-LDS R16, copia_2
-LDI ZL, LOW(TABLA7SEG << 1)
-LDI ZH, HIGH(TABLA7SEG << 1)
-ADD ZL, R16
-LPM R16, Z
-OUT PORTD, r16
-
-SBI PORTB, 1
+	CBI PORTB, 0
+	CBI PORTB, 1
+	CBI PORTB, 2
+	CBI PORTB, 3
+	
+	LDS R16, copia_2
+	LDI ZL, LOW(TABLA7SEG << 1)
+	LDI ZH, HIGH(TABLA7SEG << 1)
+	ADD ZL, R16
+	LPM R16, Z
+	OUT PORTD, r16
+	
+	SBI PORTB, 1
 
 PRINT_3:
-
-CBI PORTB, 0
-CBI PORTB, 1
-CBI PORTB, 2
-CBI PORTB, 3
-
-LDS R16, copia_3
-LDI ZL, LOW(TABLA7SEG << 1)
-LDI ZH, HIGH(TABLA7SEG << 1)
-ADD ZL, R16
-LPM R16, Z
-OUT PORTD, R16
-
-SBI PORTB, 0
-
-
+	
+	CBI PORTB, 0
+	CBI PORTB, 1
+	CBI PORTB, 2
+	CBI PORTB, 3
+	
+	LDS R16, copia_3
+	LDI ZL, LOW(TABLA7SEG << 1)
+	LDI ZH, HIGH(TABLA7SEG << 1)
+	ADD ZL, R16
+	LPM R16, Z
+	OUT PORTD, R16
+	
+	SBI PORTB, 0
+	
 
 PRINT_DISPLAY_EXIT:
 	RET
@@ -663,27 +769,6 @@ PRINT_DISPLAY_EXIT:
 // Funcion que maneja banderas de incremento y decremento
 
 
-INC_minutos:
-	
-	INC minutos_u		//Incrementar minutos
-	
-	CLR R16
-	STS bandera_minutos, R16 // Limpiar bandera de minutos
-
-	JMP BANDERAS_MODO_EXIT
-
-DEC_minutos:
-	
-	DEC minutos_u
-
-	
-	CLR R16
-	STS bandera_minutos, R16 // Limpiar bandera de minutos
-
-	JMP BANDERAS_MODO_EXIT
-
-BANDERAS_MODO_EXIT:
-	RET
 	
 ;**************************************************************************************************
 // RUTINAS DE INTERRUPCIONES
@@ -708,6 +793,24 @@ CHECK_MODO_ISR:
 	CPI contador_modo, 2
 	BREQ modo_2_PC
 
+	CPI contador_modo, 3
+	BREQ modo_3_PC
+
+	CPI contador_modo, 4
+	BREQ modo_4_PC
+
+	CPI contador_modo, 5
+	BREQ modo_5_PC
+
+	CPI contador_modo, 6
+	BREQ modo_6_PC
+
+	CPI contador_modo, 7
+	BREQ modo_7_PC
+
+
+	
+
 	RJMP ISP_PCI1_OUT
 	
 
@@ -717,9 +820,30 @@ modo_1_PC:
 	RJMP ISP_PCI1_OUT // En modo 0, los botones NO hacen nada. 
 
 modo_2_PC:
+
+	SBIS PINC, PC1 // Revisa cuando se presione el boton
+	LDI R16, 1
+	SBIS PINC, PC2
+	LDI R16, 2
+
+	STS bandera_minutos, R16
+	
 	RJMP ISP_PCI1_OUT	// Por configurar
 
+modo_3_PC:
+	RJMP ISP_PCI1_OUT	// Por configurar
 
+modo_4_PC:
+	RJMP ISP_PCI1_OUT	// Por configurar
+
+modo_5_PC:
+	RJMP ISP_PCI1_OUT	// Por configurar
+
+modo_6_PC:
+	RJMP ISP_PCI1_OUT	// Por configurar
+
+modo_7_PC:
+	RJMP ISP_PCI1_OUT	// Por configurar
 
 
 ISP_PCI1_OUT:
@@ -744,9 +868,7 @@ TIEMPO_cuenta_segundo:
 	
 	CLR contador_1_seg // LIMPIAR el contador de 1 seg, cada que este se alcanze para reiniciar la cuenta. 
 	INC contador_60_seg // Cada que pasa 1 segundo, aumentar el contador de 60segundos. Este se limpia en otra funcion. 
-
 	
 
 ISR_CPMA_OUT:
 	RETI
-
