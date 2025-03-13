@@ -24,8 +24,8 @@
 // VARIABLES GLOBALES
 ;**************************************************************************************************
 
-.equ comparacion_1seg = 5 // 100: Numero que cuenta cada  10ms para alcanzar 1 segundos
-.equ CTC_TMR0_cuenta = 10 // 156: Numero hasta el que cuenta el timer0, en modo CTC
+.equ comparacion_1seg = 100 // 100: Numero que cuenta cada  10ms para alcanzar 1 segundos
+.equ CTC_TMR0_cuenta = 156 // 156: Numero hasta el que cuenta el timer0, en modo CTC
 
 
 ; R16: Se utilizara para variables temporales
@@ -235,7 +235,7 @@ LOOP:
 	CALL COPY__FOR_MODE
 	CALL PRINT_DISPLAY
 	CALL PRINT_contador_modo // Mostrar el contador de modo
-;	CALL CHECK_banderas
+	CALL CHECK_banderas
 
 RJMP LOOP
 
@@ -653,6 +653,10 @@ CP_modo_6:
 
 	CONFI_alarma:
 	
+	LDS R16, bandera_minutos
+	STS copia_0, R16
+
+
 	RJMP COPY_FOR_MODE_EXIT
 
 
@@ -768,7 +772,74 @@ PRINT_DISPLAY_EXIT:
 	
 // Funcion que maneja banderas de incremento y decremento
 
+CHECK_banderas:
 
+	CPI contador_modo, 0
+	BREQ CHECK_banderas_EXIT // En modo cero, las banderas no se afectan
+
+	CPI contador_modo, 1
+	BREQ CHECK_banderas_EXIT // En modo uno, las banderas no se afectan
+
+	CPI contador_modo, 2
+	BREQ configurar_minutos	//POR CONFIGURAR
+
+	CPI contador_modo, 3
+	BREQ CHECK_banderas_EXIT //POR CONFIGURAR
+
+	CPI contador_modo, 4
+	BREQ CHECK_banderas_EXIT //POR CONFIGURAR
+
+	CPI contador_modo, 5
+	BREQ CHECK_banderas_EXIT //POR CONFIGURAR
+
+	CPI contador_modo, 6
+	BREQ CHECK_banderas_EXIT //POR CONFIGURAR
+
+	CPI contador_modo, 7
+	BREQ CHECK_banderas_EXIT //POR CONFIGURAR
+	
+
+configurar_minutos:
+
+	LDS R16, bandera_minutos
+	CPI R16, 0
+	BREQ CHECK_banderas_EXIT
+
+	CPI R16,1
+	BREQ INC_minutos
+
+	CPI R16, 2
+	BREQ DEC_minutos
+
+INC_minutos: 
+
+	CLR R16
+	STS bandera_minutos, R16
+	INC minutos_u	// incrementar minutos
+	
+	CPI minutos_u, 10
+	BREQ CHECK_banderas_EXIT
+
+	MOV minutos_u, R16 // Cargar 0
+
+	JMP CHECK_banderas_EXIT
+
+DEC_minutos:
+	
+	CLR R16
+	STS bandera_minutos, R16 // Limpiar bandera
+	DEC minutos_u	// decrementar minutos
+	
+	CPI minutos_u, 255
+	BREQ CHECK_banderas_EXIT
+
+	MOV minutos_u, R16 // Cargar 0
+	
+	JMP CHECK_banderas_EXIT
+
+
+CHECK_banderas_EXIT:
+	RETI
 	
 ;**************************************************************************************************
 // RUTINAS DE INTERRUPCIONES
@@ -806,10 +877,7 @@ CHECK_MODO_ISR:
 	BREQ modo_6_PC
 
 	CPI contador_modo, 7
-	BREQ modo_7_PC
-
-
-	
+	BREQ modo_7_PC	
 
 	RJMP ISP_PCI1_OUT
 	
@@ -821,14 +889,18 @@ modo_1_PC:
 
 modo_2_PC:
 
-	SBIS PINC, PC1 // Revisa cuando se presione el boton
+	CLR R16
+	STS bandera_minutos, R16 // Limpiar banderas
+
+	SBIS PINC, 1 // Si esta precionado,  R16 = 1, sino saltar
 	LDI R16, 1
-	SBIS PINC, PC2
+
+	SBIS PINC, 2 // Si esta precionado, R16 = 2, sino saltar
 	LDI R16, 2
 
-	STS bandera_minutos, R16
+	STS bandera_minutos, R16	// actualizar banderas
 	
-	RJMP ISP_PCI1_OUT	// Por configurar
+	RJMP ISP_PCI1_OUT	
 
 modo_3_PC:
 	RJMP ISP_PCI1_OUT	// Por configurar
