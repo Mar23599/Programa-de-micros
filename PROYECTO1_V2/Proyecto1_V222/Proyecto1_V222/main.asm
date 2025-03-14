@@ -11,7 +11,12 @@
 .equ CTC_TMR0_cuenta = 156 // 156: Numero hasta el que cuenta el timer0, en modo CTC
 .equ CTC_TMR2_cuenta = 78 // 78: Numero hasta el que cuenta el timer2, en modo CTC
 
-.def dias_del_mes = R20 // Registro que guarda dias del mes en función del mes
+.def dias_del_mes = R18 // Registro que guarda dias del mes en función del mes
+
+.def contador_1s = R19
+.def contador_60s = R20
+
+//Apartar R21, R22 , R23para calculos :)
 
 
 .dseg
@@ -37,10 +42,7 @@ contador_horas: .byte 1 // Contador de horas
 contador_dias: .byte 1 // contador de minutos
 contador_mes: .byte 1 // Contador de mes
 
-contador_minutos_ALARMA: .byte 1  // Contadores para ALARMA 
-contador_horas_ALARMA: .byte 1 
-
-minutos_u: .byte 1  // Registros que guardan unidades y decenas
+minutos_u:.byte 1 
 minutos_d: .byte 1 
 horas_u: .byte 1 
 horas_d: .byte 1 
@@ -49,10 +51,20 @@ dias_d: .byte 1
 mes_u: .byte 1 
 mes_d: .byte 1 
 
-copia_0: .byte 1 // Registros que se van a imprimir
-copia_1: .byte 1
-copia_2: .byte 1
+contador_minutos_ALARMA: .byte 1 
+contador_horas_ALARMA: .byte 1 
+
+A_minutos_u: .byte 1 
+A_minutos_d: .byte 1 
+A_horas_d: .byte 1 
+A_horas_u: .byte 1 
+
+copia_0: .byte 1 
+copia_1: .byte 1 
+copia_2: .byte 1 
 copia_3: .byte 1 
+
+
 
 
 ;**************************************************************************************************
@@ -103,7 +115,7 @@ TABLA7SEG:
 	
 	LDI R16, (1 << CLKPCE)
 	STS CLKPR, R16			// Habilitar el cambio del prescaler
-	LDI R16, 0b00000010     // Configuracion: 4MHz 
+	LDI R16, 0b00000010     // Configuracion de cambio de prescaler: 4MHz 
 	STS CLKPR, R16
 	
 	// desabilitar leds de comunicacion
@@ -169,7 +181,8 @@ TABLA7SEG:
 	
 	// Inicializar variables
 
-
+	CLR contador_60s 
+	CLR contador_1s
 
 	// Inicializar variables en RAM con valor inicial cero.
 
@@ -180,8 +193,30 @@ TABLA7SEG:
 	STS contador_minutos, R16
 	STS contador_horas, R16
 
+	STS minutos_u, R16
+	STS minutos_d, R16
+
+	STS horas_u, R16
+	STS horas_d, R16
+
+	STS dias_u, R16
+	STS dias_d, R16
+
+	STS mes_u, R16
+	STS mes_d, R16
+
 	STS contador_minutos_ALARMA, R16
 	STS contador_horas_ALARMA, R16
+
+	STS A_minutos_u, R16
+	STS A_minutos_d, R16
+	STS A_horas_u, R16
+	STS A_horas_d, R16
+
+	STS copia_0, R16
+	STS copia_1, R16
+	STS copia_2, R16
+	STS copia_3, R16
 	
 	// Inicializar variables en 1
 	LDI R16, 1
@@ -191,9 +226,7 @@ TABLA7SEG:
 	//Inicializaciones especiales
 	LDI dias_del_mes, 31
 
-
 	//Pruebas
-
 
 
 	SEI // habilitar interrupciones globales
@@ -203,92 +236,259 @@ TABLA7SEG:
 ;**************************************************************************************************
 
 LOOP:
-	CALL CONVERSION_UD_MINUTOS // Transformacion de contador_minutos a minutos_u y minutos_d
-	CALL CONVERSION_UD_HORAS  // Transformacion de contador_horas a horas_u y horas_d
-	CALL CONVERSION_UD_DIAS		// Transformacion de contador_dias a dias_u y dias_d
-	CALL CONVERSION_UD_MES // Transformacion de contador_mes a mes_u y mes_d
+	CALL ISP_CONTROL // Funcion que habilita y desabilita interrupciones por Timer0  
+	CALL TIEMPO_cuenta //Funcion que cuenta el tiempo. 
+	CALL CONVERTIR_UD // Función que se asegura de llenar unidades y decenas de cada unidad de tiempo 
 
-// CALL PRINT_copia
+	CALL PRINT_COPIA // Funcion que maneja que se vera en los displays, en función del modo
+
 	CALL PRINT_contador_modo // Funcion que imprime contador_modo
 	CALL PRINT_display // Función que maneja el display
+	
 	
 	RJMP LOOP
 
 // RUTINAS SIN INTERUPCION
+;-----------------------------------------------------------------------------------------------
+ISP_CONTROL:
+
+	LDS R16, contador_modo
+	CPI R16, 0
+	BREQ ISR_PCI1_OFF
+	CPI R16, 1
+	BREQ ISR_PCI1_OFF // En modo 1 y 0 habilitar interrupciones por timer0
+	CPI R16, 2
+	BREQ ISR_TM0_CPA_OFF // a partir del modo 2, dehabilitar las interrupciones del timer0
+	CPI R16, 3
+	BREQ ISR_TM0_CPA_OFF
+	CPI R16, 4
+	BREQ ISR_TM0_CPA_OFF
+	CPI R16, 5
+	BREQ ISR_TM0_CPA_OFF
+	CPI R16, 6
+	BREQ ISR_TM0_CPA_OFF
+	CPI R16, 7
+	BREQ ISR_TM0_CPA_OFF
+	JMP ISP_CONTROL_EXIT
+
+ISR_PCI1_OFF:
+
+	LDI R16, (1 << OCIE0A)
+	STS TIMSK0, R16 // Habilitar interrupciones por comparación del timer0
+
+	RJMP ISP_CONTROL_EXIT
+
+ISR_TM0_CPA_OFF:
+	LDI R16, 0x00
+	STS TIMSK0, R16 // Desabilitar interrupciones por comparación del timer0
+	CLR contador_1s
+	CLR contador_60s
+
+
+	RJMP ISP_CONTROL_EXIT
+
+
+ISP_CONTROL_EXIT:
+	RET
+
+;-----------------------------------------------------------------------------------------------
+TIEMPO_cuenta:
+
+	CPI contador_60s, 60
+	BRNE TIEMPO_cuenta_EXIT // Revisar hasta que se alcanzen 60 segundos
+
+	//Si se alcanzan 60 segundos
+	CLR contador_60s // Limpiar cuenta de segundos
+	LDS R16, contador_minutos
+	INC R16 // Cada 60 segundos incrementar contador de minutos
+
+	CPI R16, 60 // Revisar cuando se alcanzen los 60 minutos
+	BRNE TIEMPO_cuenta_EXIT_MIN
+
+	//Si se alcanzaron 60 minutos
+	CLR R16
+	STS contador_minutos, R16 // Resetear cuenta de minutos a 0
+
+	LDS R16, contador_horas
+	INC R16				// Cada 60 minutos, incrementar 1 hora
+
+	CPI R16, 24
+	BRNE TIEMPO_cuenta_EXIT_hora // Revisar cuando se alcanzen las 24 horas
+
+	//Si se alcanzan las 24 horas
+	CLR R16
+	STS contador_horas, R16 // Resetear las horas a 0
+
+	LDS R16, contador_dias
+	INC R16					// Cada 24 horas, incrementar dias
+	CP R16, dias_del_mes // Comparar los dias con la cantidad de dias_del_mes
+	BRNE TIEMPO_cuenta_EXIT_dia
+
+	// Si se alcanzo la cantidad de dias del mes
+	LDI R16, 1
+	STS contador_dias, R16 // Resetear la cantidad de dias a 1
+
+	LDS R16, contador_mes
+	INC R16					// Cada que pasen dias_del_mes, cambiar de mes
+
+	CPI R16, 13
+	BRNE TIEMPO_cuenta_EXIT_meses
+
+	LDI R16, 1
+	STS contador_mes, R16 // Si hay overflow de meses, resetear a 1 mes
+	RJMP TIEMPO_cuenta_EXIT
+
+
+TIEMPO_cuenta_EXIT_MIN:
+	STS contador_minutos, R16 // Actualizar minutos sino hubo overflow de minutos
+	RJMP TIEMPO_cuenta_EXIT
+
+TIEMPO_cuenta_EXIT_hora:
+	STS contador_horas, R16 // Actualizar horas sino hubo overflow de horas
+	RJMP TIEMPO_cuenta_EXIT
+
+TIEMPO_cuenta_EXIT_dia:
+	STS  contador_dias, R16// Actualizar las horas sino hubo overflow de dias
+	RJMP TIEMPO_cuenta_EXIT
+
+	TIEMPO_cuenta_EXIT_meses:
+	STS contador_mes, R16// Actualizar los meses sino hubo overflow de meses
+	RJMP TIEMPO_CUENTA_EXIT
+
+TIEMPO_cuenta_EXIT:
+	RET
+
+;-----------------------------------------------------------------------------------------------
+// Funcion de conversion de numero a sus: unidades y decenas
+CONVERTIR_UD:
+    ; -------------------- CONVERTIR contador_minutos --------------------
+    LDS R16, contador_minutos    ; Cargar valor del contador de minutos
+    CALL DIVIDIR_10
+    STS minutos_d, R21           ; Guardar decenas en minutos_d
+    STS minutos_u, R22           ; Guardar unidades en minutos_u
+
+    ; -------------------- CONVERTIR contador_horas --------------------
+    LDS R16, contador_horas       ; Cargar valor del contador de horas
+    CALL DIVIDIR_10
+    STS horas_d, R21              ; Guardar decenas en horas_d
+    STS horas_u, R22              ; Guardar unidades en horas_u
+
+    ; -------------------- CONVERTIR contador_dias --------------------
+    LDS R16, contador_dias        ; Cargar valor del contador de días
+    CALL DIVIDIR_10
+    STS dias_d, R21               ; Guardar decenas en dias_d
+    STS dias_u, R22              ; Guardar unidades en dias_u
+
+    ; -------------------- CONVERTIR contador_mes --------------------
+    LDS R16, contador_mes         ; Cargar valor del contador de mes
+    CALL DIVIDIR_10
+    STS mes_d, R21               ; Guardar decenas en mes_d
+    STS mes_u, R22                ; Guardar unidades en mes_u
+
+    ; -------------------- CONVERTIR contador_minutos_ALARMA --------------------
+    LDS R16, contador_minutos_ALARMA
+    CALL DIVIDIR_10
+    STS A_minutos_d, R21         ; Guardar decenas en A_minutos_d
+    STS A_minutos_u, R22          ; Guardar unidades en A_minutos_u
+
+    ; -------------------- CONVERTIR contador_horas_ALARMA --------------------
+    LDS R16, contador_horas_ALARMA
+    CALL DIVIDIR_10
+    STS A_horas_d,R21            ; Guardar decenas en A_horas_d
+    STS A_horas_u, R22           ; Guardar unidades en A_horas_u
+
+    RJMP CONVERTIR_UD_EXIT
+
+;--------------------------------------------------------------------------------
+; **SUBRUTINA: DIVIDIR_10**
+; Entrada: R16 (valor a dividir por 10)
+; Salida:  R21 (decenas), R22 (unidades)
+;--------------------------------------------------------------------------------
+DIVIDIR_10:
+    CLR R21                         ; R18 almacenará las decenas
+    MOV R22, R16                   ; Copiar valor original a R19 para calcular unidades
+    LDI R23, 10                    ; Cargar divisor (10) en R23
+
+DIV_LOOP:
+    CP R22, R23                    ; Comparar R19 con 10
+    BRLO DIV_DONE                   ; Si R19 < 10, salir del bucle
+    SUB R22, R23                   ; Restar 10 a R19
+    INC R21                         ; Incrementar el contador de decenas
+    RJMP DIV_LOOP                  ; Repetir hasta que R19 < 10
+
+DIV_DONE:
+    RET
+
+CONVERTIR_UD_EXIT:
+    RET
+
+
 ;-----------------------------------------------------------------------------------------------
 PRINT_display: 
 
 	LDS R16, control_display
 
 		CPI R16, 0
-	BREQ JMP_DISPLAY_0 // 3 - X - X - x 
+	BREQ DISPLAY_0 // 3 - X - X - x 
 		
 		CPI R16, 1
-	BREQ JMP_DISPLAY_1 //  X - 2 - X - x 
+	BREQ DISPLAY_1 //  X - 2 - X - x 
 		
 		CPI R16, 2
-	BREQ JMP_DISPLAY_2 // X - X - 1 - x
+	BREQ DISPLAY_2 // X - X - 1 - x
 		
 		CPI R16, 3
-	BREQ JMP_DISPLAY_3 // X - X - X - 0 
+	BREQ DISPLAY_3 // X - X - X - 0 
 	
 	RET
 
-JMP_DISPLAY_0:
-	JMP DISPLAY_0
-JMP_DISPLAY_1:
-	JMP DISPLAY_1
-JMP_DISPLAY_2:
-	JMP DISPLAY_2
-JMP_DISPLAY_3:
-	JMP DISPLAY_3
-	 
+DISPLAY_0: 
+	
 
-DISPLAY_0:
-	LDS R16, minutos_u // Imprimir copia3
+	LDS R16, copia_0
+
 	LDI ZL, LOW(TABLA7SEG << 1)
-	LDI ZH, HIGH(TABLA7SEG << 1)
-	ADD Zl, R16
+	LDI ZH, HIGH(TABlA7SEG << 1)
+	ADD ZL, R16 
 	LPM R16, Z
 	OUT PORTD, R16
-
 	SBI PORTB, 3	//Encender DISPLAY 3
 	JMP PRINT_display_EXIT
 
 DISPLAY_1: 
 
-	LDS R16, minutos_d // Imprimir copia2
+	LDS R16, copia_1
+
 	LDI ZL, LOW(TABLA7SEG << 1)
-	LDI ZH, HIGH(TABLA7SEG << 1)
-	ADD Zl, R16
+	LDI ZH, HIGH(TABlA7SEG << 1)
+	ADD ZL, R16 
 	LPM R16, Z
 	OUT PORTD, R16
-
 	SBI PORTB, 2	//Encender DISPLAY 2
 	JMP PRINT_display_EXIT
 
 DISPLAY_2: 
 
-	LDS R16, horas_u // Imprimir copia1
+	
+	LDS R16, copia_2
+
 	LDI ZL, LOW(TABLA7SEG << 1)
-	LDI ZH, HIGH(TABLA7SEG << 1)
-	ADD Zl, R16
+	LDI ZH, HIGH(TABlA7SEG << 1)
+	ADD ZL, R16 
 	LPM R16, Z
 	OUT PORTD, R16
-
 	SBI PORTB, 1	//Encender DISPLAY 1
 	JMP PRINT_display_EXIT
 
 DISPLAY_3: 
 
+	LDS R16, copia_3
 
-	LDS R16, horas_d // Imprimir copia0
 	LDI ZL, LOW(TABLA7SEG << 1)
-	LDI ZH, HIGH(TABLA7SEG << 1)
-	ADD Zl, R16
+	LDI ZH, HIGH(TABlA7SEG << 1)
+	ADD ZL, R16 
 	LPM R16, Z
 	OUT PORTD, R16
-
 	SBI PORTB, 0	//Encender DISPLAY 0
 	JMP PRINT_display_EXIT
 
@@ -300,14 +500,123 @@ PRINT_display_EXIT:
 	CBI PORTB, 3
 	RET
 ;-----------------------------------------------------------------------------------------------
+// Funcion de copiar en registros de copia, en funcion del modo, para mostrar en el display algo que queremos
+PRINT_COPIA:
 
+	LDS R16, contador_modo
 
+	CPI R16, 0
+	BREQ JMP_ver_hora		//Ver hora
+	CPI R16, 1
+	BREQ JMP_ver_fecha		// Ver la fecha
+	CPI R16, 2
+	BREQ JMP_conf_min		//coNFIGURACION de minutos
+	CPI R16, 3
+	BREQ JMP_conf_horas		//CONFIGURACION	 de horas
+	CPI R16, 4
+	BREQ JMP_conf_dia		//CONFIGURACION de dia
+	CPI R16, 5
+	BREQ JMP_conf_mes		// CONFIGURACION de dia
+	CPI R16, 6
+	BREQ JMP_conf_min_A		//CONFIGURACION  de minutos de alarma
+	CPI R16, 7
+	BREQ JMP_conf_hora_A	//Configuracion de horas de alarma
+	RJMP PRINT_COPIA_EXIT
 
+JMP_ver_hora:
+	RJMP ver_hora
 
+JMP_ver_fecha:
+	RJMP ver_fecha
 
-PRINT_copia_EXIT:
+JMP_conf_min:
+	RJMP conf_min
+
+JMP_conf_horas:
+	RJMP conf_horas
+
+JMP_conf_dia:
+	RJMP conf_dia
+
+JMP_conf_mes:
+	RJMP conf_mes
+
+JMP_conf_min_A:
+	RJMP conf_min_A
+
+JMP_conf_hora_A:
+	RJMP conf_hora_A
+
+ver_hora:
+	LDS R16, minutos_u
+	STS copia_0, R16 // Cargar a copia 0 minutos_u
+	LDS R16, minutos_d
+	STS copia_1, R16 // Cargar a copia 1 minutos_d
+	LDS R16, horas_u
+	STS copia_2, R16 // Cargar a copia 2 horas_u
+	LDS R16, horas_d
+	STS copia_3, R16 // Cargar a copia 3 horas_D 
+	RJMP PRINT_COPIA_EXIT
+
+ver_fecha: // FORMATO: MM/DD
+	LDS R16, mes_u
+	STS copia_0, R16 // Cargar a copia 0 mes_u
+	LDS R16, mes_d
+	STS copia_1, R16 // Cargar a copia 1 mes_d
+	LDS R16, dias_u
+	STS copia_2, R16 // Cargar a copia 2 dia_u
+	LDS R16, dias_d
+	STS copia_3, R16 // Cargar a copia 3 dia_D 
+	RJMP PRINT_COPIA_EXIT
+conf_min:
+	LDS R16, minutos_u
+	STS copia_0, R16 // Cargar a copia 0 minutos_u
+	LDS R16, minutos_d
+	STS copia_1, R16 // Cargar a copia 1 minutos_d
+	LDS R16, horas_u
+	STS copia_2, R16 // Cargar a copia 2 horas_u
+	LDS R16, horas_d
+	STS copia_3, R16 // Cargar a copia 3 horas_D 
+	RJMP PRINT_COPIA_EXIT
+conf_horas:
+	LDS R16, minutos_u
+	STS copia_0, R16 // Cargar a copia 0 minutos_u
+	LDS R16, minutos_d
+	STS copia_1, R16 // Cargar a copia 1 minutos_d
+	LDS R16, horas_u
+	STS copia_2, R16 // Cargar a copia 2 horas_u
+	LDS R16, horas_d
+	STS copia_3, R16 // Cargar a copia 3 horas_D 
+	RJMP PRINT_COPIA_EXIT
+conf_dia:
+	LDS R16, mes_u
+	STS copia_0, R16 // Cargar a copia 0 mes_u
+	LDS R16, mes_d
+	STS copia_1, R16 // Cargar a copia 1 mes_d
+	LDS R16, dias_u
+	STS copia_2, R16 // Cargar a copia 2 dia_u
+	LDS R16, dias_d
+	STS copia_3, R16 // Cargar a copia 3 dia_D 
+	RJMP PRINT_COPIA_EXIT
+conf_mes:
+	LDS R16, mes_u
+	STS copia_0, R16 // Cargar a copia 0 mes_u
+	LDS R16, mes_d
+	STS copia_1, R16 // Cargar a copia 1 mes_d
+	LDS R16, dias_u
+	STS copia_2, R16 // Cargar a copia 2 dia_u
+	LDS R16, dias_d
+	STS copia_3, R16 // Cargar a copia 3 dia_D 
+	RJMP PRINT_COPIA_EXIT
+
+conf_min_A:
+conf_hora_A:
+
+PRINT_COPIA_EXIT:
 	RET
 ;-----------------------------------------------------------------------------------------------
+
+
 // Rutina que imprime el contador_modo
 
 PRINT_contador_modo: 
@@ -329,115 +638,15 @@ PRINT_contador_modo:
 
 	RET
 ;-----------------------------------------------------------------------------------------------
-// FUNCIONES DE CONVERSIONES DE UNIDADES :) 
-CONVERSION_UD_MINUTOS:
-
-	   LDS R16, contador_minutos   ; Cargar el valor del contador de minutos en R16
-    
-    LDI R17, 10                 ; Cargar 10 en R17 para división
-    MOV R18, R16                ; Copia R16 en R18 para no modificarlo
-    
-    ; Calcular decenas (R16 = contador_minutos / 10)
-    CLR R19                     ; Limpiar R19 para la división
-    MOV R20, R17                ; Copiar divisor (10) a R20
-DIV_LOOP:
-    CP R18, R20                 ; Comparar R18 con 10
-    BRLO DIV_DONE               ; Si R18 < 10, salir del bucle
-    SUB R18, R20                ; Restar 10 de R18
-    INC R19                     ; Incrementar contador de decenas
-    RJMP DIV_LOOP               ; Repetir hasta que R18 < 10
-DIV_DONE:
-
-    STS minutos_d, R19          ; Guardar decenas en memoria
-
-    ; Calcular unidades (R16 = contador_minutos % 10)
-    STS minutos_u, R18          ; Guardar unidades en memoria
 
 
 
-	RJMP CONVERSION_UD_MINUTOS_EXIT
-CONVERSION_UD_MINUTOS_EXIT:
-	RET
-;-----------------------------------------------------------
-//Funcion de conversion para horas
-CONVERSION_UD_HORAS:
 
-	  LDS R16, contador_horas  ; Cargar el valor del contador de minutos en R16
-    
-    LDI R17, 10                 ; Cargar 10 en R17 para división
-    MOV R18, R16                ; Copia R16 en R18 para no modificarlo
-    
-    ; Calcular decenas (R16 = contador_minutos / 10)
-    CLR R19                     ; Limpiar R19 para la división
-    MOV R20, R17                ; Copiar divisor (10) a R20
-DIV_LOOP_horas:
-    CP R18, R20                 ; Comparar R18 con 10
-    BRLO DIV_DONE_horas               ; Si R18 < 10, salir del bucle
-    SUB R18, R20                ; Restar 10 de R18
-    INC R19                     ; Incrementar contador de decenas
-    RJMP DIV_LOOP_horas               ; Repetir hasta que R18 < 10
-DIV_DONE_horas:
 
-    STS horas_d, R19          ; Guardar decenas en memoria
-    ; Calcular unidades (R16 = contador_horas % 10)
-    STS horas_u, R18          ; Guardar unidades en memoria
-	RJMP CONVERSION_UD_MINUTOS_EXIT
 
-CONVERSION_UD_HORAS_EXIT:
-	RET
+
+
 ;-----------------------------------------------------------------------------------------------
-CONVERSION_UD_DIAS:
-	  LDS R16, contador_dias  ; Cargar el valor del contador de dias en R16
-    
-    LDI R17, 10                 ; Cargar 10 en R17 para división
-    MOV R18, R16                ; Copia R16 en R18 para no modificarlo
-    
-    ; Calcular decenas (R16 = contador_minutos / 10)
-    CLR R19                     ; Limpiar R19 para la división
-    MOV R20, R17                ; Copiar divisor (10) a R20
-DIV_LOOP_dias:
-    CP R18, R20                 ; Comparar R18 con 10
-    BRLO DIV_DONE_dias               ; Si R18 < 10, salir del bucle
-    SUB R18, R20                ; Restar 10 de R18
-    INC R19                     ; Incrementar contador de decenas
-    RJMP DIV_LOOP_dias                ; Repetir hasta que R18 < 10
-DIV_DONE_dias:
-
-    STS horas_d, R19          ; Guardar decenas en memoria
-    ; Calcular unidades (R16 = contador_dias % 10)
-    STS horas_u, R18          ; Guardar unidades en memoria
-	RJMP CONVERSION_UD_MINUTOS_EXIT
-
-
-CONVERSION_UD_DIAS_EXIT: 
-	RET
-;-----------------------------------------------------------------------------------------------
-
-CONVERSION_UD_MES:
-	  LDS R16, contador_mes  ; Cargar el valor del contador de mes  en R16
-    
-    LDI R17, 10                 ; Cargar 10 en R17 para división
-    MOV R18, R16                ; Copia R16 en R18 para no modificarlo
-    
-    ; Calcular decenas (R16 = contador_minutos / 10)
-    CLR R19                     ; Limpiar R19 para la división
-    MOV R20, R17                ; Copiar divisor (10) a R20
-DIV_LOOP_mes :
-    CP R18, R20                 ; Comparar R18 con 10
-    BRLO DIV_DONE_mes               ; Si R18 < 10, salir del bucle
-    SUB R18, R20                ; Restar 10 de R18
-    INC R19                     ; Incrementar contador de decenas
-    RJMP DIV_LOOP_mes                 ; Repetir hasta que R18 < 10
-DIV_DONE_mes :
-    STS horas_d, R19          ; Guardar decenas en memoria
-    ; Calcular unidades (R16 = contador_dias % 10)
-    STS horas_u, R18          ; Guardar unidades en memoria
-	RJMP CONVERSION_UD_MES_EXIT
-
-CONVERSION_UD_MES_EXIT:
-RET
-;-----------------------------------------------------------------------------------------------
-
 
 // RUTINAS DE INTERRUPCION
 
@@ -556,15 +765,17 @@ modo_3_PC:
 	STS contador_horas, R16 // Sino hay under/over-flow actualizar contador_horas
 	RJMP ISP_PCI1_OUT
 
+_23_horas:
+		LDI R16, 23
+		STS contador_horas, R16 // Actualizar contador_horas con 23 por underflow
+		RJMP ISP_PCI1_OUT
+
 _0_horas:
 		LDI R16, 0
 		STS contador_horas, R16 // Actualizar contador_horas con 0 por overflow
 		RJMP ISP_PCI1_OUT
 
-_23_horas:
-		LDI R16, 23
-		STS contador_horas, R16 // Actualizar contador_horas con 23 por underflow
-		RJMP ISP_PCI1_OUT
+
 
 	JMP ISP_PCI1_OUT	
 
@@ -676,12 +887,12 @@ modo_7_PC:
 
 _0_horas_ALARMA:
 		LDI R16, 0
-		STS contador_horas, R16 // Actualizar contador_horas con 0 por overflow
+		STS contador_horas_ALARMA, R16 // Actualizar contador_horas con 0 por overflow
 		RJMP ISP_PCI1_OUT
 
 _23_horas_ALARMA:
 		LDI R16, 23
-		STS contador_horas, R16 // Actualizar contador_horas con 23 por underflow
+		STS contador_horas_ALARMA, R16 // Actualizar contador_horas con 23 por underflow
 		RJMP ISP_PCI1_OUT
 
 
@@ -692,6 +903,14 @@ ISP_PCI1_OUT:
 
 // Rutina de interrupcion por comparación del timer0(sucede cada 10ms)
 ISR_CPMA:
+
+	INC contador_1s
+	CPI contador_1s, 100 // Si el contador_1s alcanzo 100, se llego a 1 segundo
+	BRNE ISP_CPMA_EXIT // Si no se ha alcanzado, salir
+	
+	CLR contador_1s // Cada segundo, limpiar el contador para empezar la cuenta de nuevo
+	INC contador_60s // Incrementar contador cada segundo
+
 
 
 ISP_CPMA_EXIT:
