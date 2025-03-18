@@ -1,4 +1,11 @@
 ; VERSION #2
+;Universidad del Valle de Guatemala
+;Departamento de ingeniería electrónica, mecatrónica y biomédica
+;Programación de microcontroladores
+;PROYECTO 1: Reloj
+;Implementar un reloj que muestre la hora y la fecha, además que ambas puedan configurarse. Debe contar con una alarma configurable y audible
+;
+;CREADO POR: Alejandro Jose Martinez Contreras, 23599
 
 
 .include "M328pdef.inc" 
@@ -8,8 +15,8 @@
 ;**************************************************************************************************
 
 .equ comparacion_1seg = 100 // 100: Numero que cuenta cada  10ms para alcanzar 1 segundos
-.equ CTC_TMR0_cuenta = 156 // 156: Numero hasta el que cuenta el timer0, en modo CTC
-.equ CTC_TMR2_cuenta = 78 // 78: Numero hasta el que cuenta el timer2, en modo CTC
+.equ CTC_TMR0_cuenta = 156 // 156: Numero hasta el que cuenta el timer0, en modo CTC, para alcanzar 10ms
+.equ CTC_TMR2_cuenta = 78 // 78: Numero hasta el que cuenta el timer2, en modo CTC para alcanzar 5ms
 
 .def dias_del_mes = R18 // Registro que guarda dias del mes en función del mes
 
@@ -17,6 +24,7 @@
 .def contador_60s = R20
 
 //Apartar R21, R22 , R23para calculos :)
+//R27 se usa para comparaciones en rutina de alarma
 
 
 .dseg
@@ -64,7 +72,8 @@ copia_1: .byte 1
 copia_2: .byte 1 
 copia_3: .byte 1 
 
-
+contador_50s: .byte 1
+contador_05s: .byte 1
 
 
 ;**************************************************************************************************
@@ -122,7 +131,7 @@ TABLA7SEG:
 	
 	LDI R16, 0x00
 	STS UCSR0B, R16
-	STS UCSR0C, R16 
+	//STS UCSR0C, R16 
 	
 	// TIMER0: Configuracion del timer0
 	
@@ -157,9 +166,9 @@ TABLA7SEG:
 	LDI R16, 0xFF
 	OUT DDRD, R16
 	
-	//Puerto B: Configuración como salida: Se utilizara para control de los display, por medio de transistores
+	//Puerto B: Configuración como salida: Se utilizara para control de los display, por medio de transistores y aqui se instala la alarma
 	
-	LDI R16, 0b00001111
+	LDI R16, 0b00111111
 	OUT DDRB, R16
 	
 	// Puerto C: Configuración como entrada y salidas: Se utilizara para utilizar pushbotoms y contador de modo (0,0,S2,S1,S0,PB2,PB1,PB0)
@@ -217,6 +226,9 @@ TABLA7SEG:
 	STS copia_1, R16
 	STS copia_2, R16
 	STS copia_3, R16
+
+	STS contador_50s, R16
+	STS contador_05s, R16
 	
 	// Inicializar variables en 1
 	LDI R16, 1
@@ -225,6 +237,11 @@ TABLA7SEG:
 
 	//Inicializaciones especiales
 	LDI dias_del_mes, 31
+
+	//Inicialización de alarma
+	LDI R16, 12
+	STS contador_minutos_ALARMA, R16
+	STS contador_horas_ALARMA, R16
 
 	//Pruebas
 
@@ -236,6 +253,8 @@ TABLA7SEG:
 ;**************************************************************************************************
 
 LOOP:
+	
+	CALL SET_REGISTRO_dias_del_mes
 	CALL ISP_CONTROL // Funcion que habilita y desabilita interrupciones por Timer0  
 	CALL TIEMPO_cuenta //Funcion que cuenta el tiempo. 
 	CALL CONVERTIR_UD // Función que se asegura de llenar unidades y decenas de cada unidad de tiempo 
@@ -244,12 +263,17 @@ LOOP:
 
 	CALL PRINT_contador_modo // Funcion que imprime contador_modo
 	CALL PRINT_display // Función que maneja el display
+
+	CALL ALARMA_control
 	
 	
 	RJMP LOOP
 
 // RUTINAS SIN INTERUPCION
 ;-----------------------------------------------------------------------------------------------
+
+
+
 ISP_CONTROL:
 
 	LDS R16, contador_modo
@@ -281,8 +305,8 @@ ISR_PCI1_OFF:
 ISR_TM0_CPA_OFF:
 	LDI R16, 0x00
 	STS TIMSK0, R16 // Desabilitar interrupciones por comparación del timer0
-	CLR contador_1s
-	CLR contador_60s
+	;CLR contador_1s
+	;CLR contador_60s
 
 
 	RJMP ISP_CONTROL_EXIT
@@ -301,7 +325,7 @@ TIEMPO_cuenta:
 	CLR contador_60s // Limpiar cuenta de segundos
 	LDS R16, contador_minutos
 	INC R16 // Cada 60 segundos incrementar contador de minutos
-
+	STS contador_minutos, R16 // Resetear cuenta de minutos a 0
 	CPI R16, 60 // Revisar cuando se alcanzen los 60 minutos
 	BRNE TIEMPO_cuenta_EXIT_MIN
 
@@ -551,7 +575,7 @@ ver_hora:
 	LDS R16, minutos_u
 	STS copia_0, R16 // Cargar a copia 0 minutos_u
 	LDS R16, minutos_d
-	STS copia_1, R16 // Cargar a copia 1 minutos_d
+	STS copia_1, R16// Cargar a copia 1 minutos_d
 	LDS R16, horas_u
 	STS copia_2, R16 // Cargar a copia 2 horas_u
 	LDS R16, horas_d
@@ -610,7 +634,28 @@ conf_mes:
 	RJMP PRINT_COPIA_EXIT
 
 conf_min_A:
+	LDS R16, A_minutos_u
+	STS copia_0, R16 // Cargar a copia 0 minutos_u_ALARMA
+	LDS R16, A_minutos_d
+	STS copia_1, R16 // Cargar a copia 1 minutos_d_ALARMA
+	LDS R16, A_horas_u
+	STS copia_2, R16 // Cargar a copia 2 horas_u_ALARMA
+	LDS R16, A_horas_d
+	STS copia_3, R16 // Cargar a copia 3 horas_D _ALARMA
+	RJMP PRINT_COPIA_EXIT
+
 conf_hora_A:
+	LDS R16, A_minutos_u
+	STS copia_0, R16 // Cargar a copia 0 minutos_u_ALARMA
+	LDS R16, A_minutos_d
+	STS copia_1, R16 // Cargar a copia 1 minutos_d_ALARMA
+	LDS R16, A_horas_u
+	STS copia_2, R16 // Cargar a copia 2 horas_u_ALARMA
+	LDS R16, A_horas_d
+	STS copia_3, R16 // Cargar a copia 3 horas_D _ALARMA
+	RJMP PRINT_COPIA_EXIT
+
+
 
 PRINT_COPIA_EXIT:
 	RET
@@ -639,9 +684,90 @@ PRINT_contador_modo:
 	RET
 ;-----------------------------------------------------------------------------------------------
 
+//Funcion que controla la alarma
+ALARMA_control:
+	LDS R16, contador_horas_ALARMA // Cargar el contador de alarma a R16
+	LDS R25, contador_horas			//Cargar el contador de horas a R24
+
+	CP R16, R25			//Revisar si las horas son iguales, si son iguales continuar, sino salir y mantener apagada la alarma
+	BRNE ALARMA_control_EXIT
+
+//Si son iguales, revisar minutos
+
+	LDS R16, contador_minutos_ALARMA // Cargar contador de minutos de alarma a R16
+	LDS R25, contador_minutos  // Cargar contador de minutos de alarma a R24
+
+	CP R16, R25 // Revisar si los minutos son iguales. Si las horas y minutos son iguales, activar la alarma. SINO salir
+	BRNE ALARMA_control_EXIT
+
+//Si son iguales
+
+	SBI PORTB, 5 // Encender la alarma cuando se alcanze el minutos
+	JMP ALARMA_control_EXIT 
 
 
+ALARMA_control_EXIT_OFF:
+	CBI PORTB, 5 // MANTENER APAGADA LA ALARMA
+	RJMP ALARMA_control_EXIT
 
+ALARMA_control_EXIT:
+	RET
+;-----------------------------------------------------------------------------------------------
+
+SET_REGISTRO_dias_del_mes:
+
+LDS R16, contador_mes // Cargar a R16 dias del mes
+CPI R16, 1 
+BREQ set_31_dias // Enero
+
+CPI R16, 2
+BREQ set_28_dias// febrero
+
+CPI R16, 3 
+BREQ set_31_dias // Marzo
+
+CPI R16, 4		//Abril
+BREQ set_30_dias
+
+CPI R16, 5
+BREQ set_31_dias // Mayo
+
+CPI R16, 6 
+BREQ set_30_dias // Junio
+
+CPI R16, 7 
+BREQ set_31_dias //Julio
+
+CPI R16, 8 
+BREQ set_31_dias // Agosto
+
+CPI R16, 9 
+BREQ set_30_dias // Septiembre
+
+CPI R16, 10 
+BREQ set_31_dias // Octubre
+
+CPI R16, 11 
+BREQ set_30_dias // Noviembre
+
+CPI R16, 12 
+BREQ set_31_dias // Diciembre
+
+set_31_dias:
+
+	LDI dias_del_mes, 32 // Colocar 31 como los dias del mes
+	RJMP SET_REGISTRO_dias_del_mes_EXIT
+
+set_30_dias:
+	LDI dias_del_mes,31 // colocar 30 como los dias del mes
+	RJMP SET_REGISTRO_dias_del_mes_EXIT
+
+set_28_dias:
+	LDI dias_del_mes, 29 // Colocar 28 como dias del mes
+	RJMP SET_REGISTRO_dias_del_mes_EXIT
+
+SET_REGISTRO_dias_del_mes_EXIT:
+	RET
 
 
 
@@ -651,6 +777,9 @@ PRINT_contador_modo:
 // RUTINAS DE INTERRUPCION
 
 ISR_PCI1:
+	IN R1, SREG
+	PUSH R1
+	PUSH R16
 
 	LDS R16, contador_modo // Contador_modo = R16
 	SBIS PINC, 0 // Si se preciono el boton, incrementar si se preciona (pb=0)
@@ -898,22 +1027,32 @@ _23_horas_ALARMA:
 
 
 ISP_PCI1_OUT:
+	POP R16
+	POP R1
+	OUT SREG, R0
 	RETI
 
 
 // Rutina de interrupcion por comparación del timer0(sucede cada 10ms)
 ISR_CPMA:
+	
+	IN R1, SREG
+	PUSH R1
+	PUSH R16
 
 	INC contador_1s
-	CPI contador_1s, 100 // Si el contador_1s alcanzo 100, se llego a 1 segundo
+
+	CPI contador_1s, comparacion_1seg// Si el contador_1s alcanzo 100, se llego a 1 segundo
 	BRNE ISP_CPMA_EXIT // Si no se ha alcanzado, salir
 	
 	CLR contador_1s // Cada segundo, limpiar el contador para empezar la cuenta de nuevo
 	INC contador_60s // Incrementar contador cada segundo
 
-
-
 ISP_CPMA_EXIT:
+	
+	POP R16
+	POP R1
+	OUT SREG, R0
 	RETI
 
 
@@ -921,6 +1060,27 @@ ISP_CPMA_EXIT:
 // Control de display
 
 ISP_CPMA2:
+	
+	IN R1, SREG
+	PUSH R1
+	PUSH R16
+
+
+	LDS R16, contador_50s // Cargar contador de medio segundo a R1
+	INC R16				// Incrementarlo
+	CPI R16, 100			// Revisar si llega a 100, esto indica 50ms
+	BRNE no_encender_led
+	SBI PORTB, 4			//Si pasaron 50ms encender
+	
+no_encender_led:
+	STS contador_50s, R16
+	CPI R16, 200
+	BRNE control_display_R // Revisar hasta que hayan pasado otros 50ms
+	CBI PORTB, 4 // Si pasaron otros 50ms apagar
+	CLR R16
+	STS contador_50s, R16
+
+control_display_R:
 	
 	LDS R16, control_display // Cargar control_display en R16
 	INC R16					// Incrementar control_display cada 5ms
@@ -935,5 +1095,8 @@ LOAD_R16:
 STS control_display, R16	// Actualizar la cuenta
 
 ISP_CPMA2_EXIT:
-	
+
+	POP R16
+	POP R1
+	OUT SREG, R0
 	RETI
