@@ -24,6 +24,7 @@
 
 void setup (); 
 void print_contador8();
+void print_PUERTO_C ();
 
 /****************************************/
 // Main Function
@@ -36,7 +37,8 @@ int main(void)
 	while (1)
 	{
 		PORTD = contador8;
-		//print_contador8();
+		//PORTB = contador8;
+		print_contador8();
 	}
 }
 
@@ -75,21 +77,21 @@ void setup (){
 	
 }
 
-/* ///
+
 void print_contador8(){
 	
 	// Dividir contador8 en sus dos nibbles
 	contador8_LOW = contador8 & 0x0F ; // mascara para conservar nibble 1 
 	contador8_HIGH = contador8 & 0xF0 ; // mascara para concervar nibble 2
+	contador8_HIGH = (contador8_HIGH) |(contador8_HIGH >> 4); // Mascara para pasar el nibble 2 al primer nible del contador8_HIGH
 	
-	PORTC = (PORTC & 0xF0) | (contador8_LOW); // Imprimir nibble 1 en PORTC
+	PORTC = (PORTC & 0b11110000) | (contador8_LOW); // Imprimir nibble 1 en PORTC //AQUI HAY ERROR
 	PORTB = (PORTB & 0xF0) | (contador8_HIGH); // Imprimir nibble 2 en PORTB
 	
 }
 
-*/ ///
 
-/****************************************/
+
 // Interrupt routines
 
 ISR(PCINT1_vect){
@@ -98,10 +100,10 @@ ISR(PCINT1_vect){
 	
 	PINC_register = PINC;
 	
-	if (PINC_register == 0b00010000)
+	if ( !(PINC & (1 << PC4) ))  // PINC_register == 0b00010000
 	{
 		contador8++; // Si se presiono PC4 incrementar
-	} else if (PINC_register == 0b00100000)
+	} else if (!(PINC & (1 << PC5) )) // PINC_register == 0b00100000
 	{
 		contador8--; // Si re presiono PC5 decrementar
 	}
