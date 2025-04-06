@@ -21,6 +21,7 @@
  uint8_t contador8 = 0;
  uint8_t contador8_LOW = 0;
  uint8_t contador8_HIGH = 0;
+ uint8_t contador_timer0 = 0; 
 
 void setup (); 
 void print_contador8();
@@ -72,6 +73,18 @@ void setup (){
 	PCMSK1 |= (1<< PCINT12); // habilitar interrupciones en PC4
 	PCMSK1 |= (1 << PCINT13); // habilitar interrupciones en PC5
 	
+	
+	//Configuración de interrupciones del timer0: Implementación de antirebote. 
+	
+	//F_CPU = 16MHz
+	
+	TCCR0A |= (1 << WGM01) ; // Colocar el timper en modo CTCGOat
+	TCCR0B |= (1 << CS02) | (1 << CS00); // Colocar prescaler de 1024
+	OCR0A = 156; // La cuenta debe llegar a 156 para interrumpir cada 10ms
+	TIMSK0 &= ~(1 << OCIE0A); // NO habilitar interrupcion por CMA
+	 
+	
+	
 	sei(); // habilitar interrupciones globales
 	
 	
@@ -98,8 +111,9 @@ ISR(PCINT1_vect){
 	
 	// Rutina de interrupcion por cambios en puerto C: PC4 y PC5 
 	
-	PINC_register = PINC;
+//	TIMSK0 |= (1 << OCIE0A); // HABILITAR interrupciones del timer0 CMA
 	
+
 	if ( !(PINC & (1 << PC4) ))  // PINC_register == 0b00010000
 	{
 		contador8++; // Si se presiono PC4 incrementar
@@ -108,7 +122,25 @@ ISR(PCINT1_vect){
 		contador8--; // Si re presiono PC5 decrementar
 	}
 	
+
 	
+	
+	
+}
+
+ISR (TIMER0_COMPA_vect){
+	
+	contador_timer0++; //Incrementar cada 10ms
+	
+	if (contador_timer0 == 10) // Cada 100ms revisar antirebote
+	{
+		
+		contador_timer0 = 0; // Limpiar la cuenta de tiempo
+		PINC_register =  (PINC & 0b00110000); // Leer PINC 
+		TIMSK0 &= ~(1 << OCIE0A); // DESABILITAR interrupciones del timer0 CMP
+	}
+	
+	//Si contador_timer0 no es 10, entonces salir de la ISR
 }
 
 
