@@ -6,6 +6,7 @@
  * Created: 31/03/25
  * Author: Alejandro Martínez
  * Description: Realizar un contador binario de 8 bits. Este debe incrementar y decrementar con dos pusbottoms diferentes
+ * Postlab y lab: Implementar un contador binario de 8 bits, mostrarlo en hexadecimal y crear una alarma que encienda un led cuando la cuenta en hex sea mayor a la binaria
  */
 /****************************************/
 // Encabezado (Libraries)
@@ -228,7 +229,7 @@ ISR (TIMER0_COMPA_vect){
 	
 	if ( contador_display >= 3)
 	{
-		contador_display = 0; // Luego de 30ms resetear la cuenta
+		// Luego de 30ms resetear la cuenta
 	}
 	
 	
