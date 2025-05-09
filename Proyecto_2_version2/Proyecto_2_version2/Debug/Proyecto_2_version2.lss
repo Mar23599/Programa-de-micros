@@ -1,0 +1,887 @@
+
+Proyecto_2_version2.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .data         00000126  00800100  000004aa  0000053e  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  1 .text         000004aa  00000000  00000000  00000094  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .bss          00000011  00800226  00800226  00000664  2**0
+                  ALLOC
+  3 .comment      00000030  00000000  00000000  00000664  2**0
+                  CONTENTS, READONLY
+  4 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  00000694  2**2
+                  CONTENTS, READONLY
+  5 .debug_aranges 00000178  00000000  00000000  000006d8  2**3
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_info   000010ab  00000000  00000000  00000850  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_abbrev 0000091d  00000000  00000000  000018fb  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_line   00000a05  00000000  00000000  00002218  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_frame  000001a8  00000000  00000000  00002c20  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_str    00000564  00000000  00000000  00002dc8  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_loc    0000019d  00000000  00000000  0000332c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_ranges 000000b8  00000000  00000000  000034c9  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 34 00 	jmp	0x68	; 0x68 <__ctors_end>
+   4:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+   8:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+   c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  10:	0c 94 bd 01 	jmp	0x37a	; 0x37a <__vector_4>
+  14:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  18:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  1c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  20:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  24:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  28:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  2c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  30:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  34:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  38:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  3c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  40:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  44:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  48:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  4c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  50:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  54:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  58:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  5c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  60:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  64:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+
+00000068 <__ctors_end>:
+  68:	11 24       	eor	r1, r1
+  6a:	1f be       	out	0x3f, r1	; 63
+  6c:	cf ef       	ldi	r28, 0xFF	; 255
+  6e:	d8 e0       	ldi	r29, 0x08	; 8
+  70:	de bf       	out	0x3e, r29	; 62
+  72:	cd bf       	out	0x3d, r28	; 61
+
+00000074 <__do_copy_data>:
+  74:	12 e0       	ldi	r17, 0x02	; 2
+  76:	a0 e0       	ldi	r26, 0x00	; 0
+  78:	b1 e0       	ldi	r27, 0x01	; 1
+  7a:	ea ea       	ldi	r30, 0xAA	; 170
+  7c:	f4 e0       	ldi	r31, 0x04	; 4
+  7e:	02 c0       	rjmp	.+4      	; 0x84 <__do_copy_data+0x10>
+  80:	05 90       	lpm	r0, Z+
+  82:	0d 92       	st	X+, r0
+  84:	a6 32       	cpi	r26, 0x26	; 38
+  86:	b1 07       	cpc	r27, r17
+  88:	d9 f7       	brne	.-10     	; 0x80 <__do_copy_data+0xc>
+
+0000008a <__do_clear_bss>:
+  8a:	22 e0       	ldi	r18, 0x02	; 2
+  8c:	a6 e2       	ldi	r26, 0x26	; 38
+  8e:	b2 e0       	ldi	r27, 0x02	; 2
+  90:	01 c0       	rjmp	.+2      	; 0x94 <.do_clear_bss_start>
+
+00000092 <.do_clear_bss_loop>:
+  92:	1d 92       	st	X+, r1
+
+00000094 <.do_clear_bss_start>:
+  94:	a7 33       	cpi	r26, 0x37	; 55
+  96:	b2 07       	cpc	r27, r18
+  98:	e1 f7       	brne	.-8      	; 0x92 <.do_clear_bss_loop>
+  9a:	0e 94 b8 01 	call	0x370	; 0x370 <main>
+  9e:	0c 94 53 02 	jmp	0x4a6	; 0x4a6 <_exit>
+
+000000a2 <__bad_interrupt>:
+  a2:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+000000a6 <adc_init>:
+void adc_init(void) {
+	// Configuración del ADC:
+	// - Referencia AVcc (REFS0=1)
+	// - Justificado a izquierda (ADLAR=1) para leer solo ADCH
+	// - Prescaler de 128 (125kHz @ 16MHz)
+	ADMUX = (1 << REFS0) | (1 << ADLAR);
+  a6:	80 e6       	ldi	r24, 0x60	; 96
+  a8:	80 93 7c 00 	sts	0x007C, r24	; 0x80007c <__TEXT_REGION_LENGTH__+0x7f807c>
+	
+	// Habilitar ADC con prescaler de 128
+	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+  ac:	87 e8       	ldi	r24, 0x87	; 135
+  ae:	80 93 7a 00 	sts	0x007A, r24	; 0x80007a <__TEXT_REGION_LENGTH__+0x7f807a>
+  b2:	08 95       	ret
+
+000000b4 <adc_read>:
+}
+
+uint8_t adc_read(uint8_t channel) {
+	// Seleccionar canal (0-7) manteniendo la configuración existente
+	ADMUX = (ADMUX & 0xF0) | (channel & 0x07);
+  b4:	ec e7       	ldi	r30, 0x7C	; 124
+  b6:	f0 e0       	ldi	r31, 0x00	; 0
+  b8:	90 81       	ld	r25, Z
+  ba:	90 7f       	andi	r25, 0xF0	; 240
+  bc:	87 70       	andi	r24, 0x07	; 7
+  be:	89 2b       	or	r24, r25
+  c0:	80 83       	st	Z, r24
+	
+	// Iniciar conversión
+	ADCSRA |= (1 << ADSC);
+  c2:	ea e7       	ldi	r30, 0x7A	; 122
+  c4:	f0 e0       	ldi	r31, 0x00	; 0
+  c6:	80 81       	ld	r24, Z
+  c8:	80 64       	ori	r24, 0x40	; 64
+  ca:	80 83       	st	Z, r24
+	
+	// Esperar fin de conversión
+	while (ADCSRA & (1 << ADSC));
+  cc:	80 91 7a 00 	lds	r24, 0x007A	; 0x80007a <__TEXT_REGION_LENGTH__+0x7f807a>
+  d0:	86 fd       	sbrc	r24, 6
+  d2:	fc cf       	rjmp	.-8      	; 0xcc <adc_read+0x18>
+	
+	// Retornar solo ADCH (8 bits superiores, gracias a ADLAR=1)
+	return ADCH;
+  d4:	80 91 79 00 	lds	r24, 0x0079	; 0x800079 <__TEXT_REGION_LENGTH__+0x7f8079>
+}
+  d8:	08 95       	ret
+
+000000da <constrain>:
+
+
+
+// Función para limitar valores dentro de un rango
+static uint8_t constrain(uint8_t value, uint8_t min, uint8_t max) {
+	if(value < min) return min;
+  da:	86 17       	cp	r24, r22
+  dc:	20 f0       	brcs	.+8      	; 0xe6 <constrain+0xc>
+	if(value > max) return max;
+  de:	48 17       	cp	r20, r24
+  e0:	18 f4       	brcc	.+6      	; 0xe8 <constrain+0xe>
+  e2:	84 2f       	mov	r24, r20
+  e4:	08 95       	ret
+
+
+
+// Función para limitar valores dentro de un rango
+static uint8_t constrain(uint8_t value, uint8_t min, uint8_t max) {
+	if(value < min) return min;
+  e6:	86 2f       	mov	r24, r22
+	if(value > max) return max;
+	return value;
+}
+  e8:	08 95       	ret
+
+000000ea <PWM_init_Timer0>:
+
+void PWM_init_Timer0() {
+	DDRD |= (1 << PD6) | (1 << PD5); // Pines OC0A y OC0B como salida
+  ea:	8a b1       	in	r24, 0x0a	; 10
+  ec:	80 66       	ori	r24, 0x60	; 96
+  ee:	8a b9       	out	0x0a, r24	; 10
+	TCCR0A = (1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) | (1 << WGM00);
+  f0:	83 ea       	ldi	r24, 0xA3	; 163
+  f2:	84 bd       	out	0x24, r24	; 36
+	TCCR0B = (1 << CS02) | (1 << CS00); // Prescaler 1024
+  f4:	85 e0       	ldi	r24, 0x05	; 5
+  f6:	85 bd       	out	0x25, r24	; 37
+  f8:	08 95       	ret
+
+000000fa <PWM_init_Timer1>:
+}
+
+void PWM_init_Timer1(uint16_t ICR1_v) {
+  fa:	9c 01       	movw	r18, r24
+	DDRB |= (1 << PB1) | (1 << PB2);
+  fc:	94 b1       	in	r25, 0x04	; 4
+  fe:	96 60       	ori	r25, 0x06	; 6
+ 100:	94 b9       	out	0x04, r25	; 4
+	
+	// Configurar modo Fast PWM con ICR1 como TOP (Modo 14)
+	TCCR1A = (1 << COM1A1) | (1 << COM1B1) | (1 << WGM11);
+ 102:	82 ea       	ldi	r24, 0xA2	; 162
+ 104:	80 93 80 00 	sts	0x0080, r24	; 0x800080 <__TEXT_REGION_LENGTH__+0x7f8080>
+	TCCR1B = (1 << WGM13) | (1 << WGM12) | (1 << CS12) | (1 << CS10);
+ 108:	8d e1       	ldi	r24, 0x1D	; 29
+ 10a:	80 93 81 00 	sts	0x0081, r24	; 0x800081 <__TEXT_REGION_LENGTH__+0x7f8081>
+	
+	// Establecer el valor de TOP (define el período PWM)
+	ICR1 = ICR1_v;
+ 10e:	30 93 87 00 	sts	0x0087, r19	; 0x800087 <__TEXT_REGION_LENGTH__+0x7f8087>
+ 112:	20 93 86 00 	sts	0x0086, r18	; 0x800086 <__TEXT_REGION_LENGTH__+0x7f8086>
+ 116:	08 95       	ret
+
+00000118 <PWM_calculate_servo_8bit>:
+}
+
+uint8_t PWM_calculate_servo_8bit(uint8_t value) {
+	// Asegurar que el valor está en rango 0-255
+	value = constrain(value, 0, 255);
+ 118:	4f ef       	ldi	r20, 0xFF	; 255
+ 11a:	60 e0       	ldi	r22, 0x00	; 0
+ 11c:	0e 94 6d 00 	call	0xda	; 0xda <constrain>
+	
+	// Mapear 0-255 a 8-39 (para pulso de 0.5ms a 2.5ms)
+	// Fórmula: output = 8 + (value / 255.0) * (39 - 8)
+	return (uint8_t)(8 + (value * 31) / 255);
+ 120:	2f e1       	ldi	r18, 0x1F	; 31
+ 122:	82 9f       	mul	r24, r18
+ 124:	c0 01       	movw	r24, r0
+ 126:	11 24       	eor	r1, r1
+ 128:	6f ef       	ldi	r22, 0xFF	; 255
+ 12a:	70 e0       	ldi	r23, 0x00	; 0
+ 12c:	0e 94 02 02 	call	0x404	; 0x404 <__divmodhi4>
+}
+ 130:	88 e0       	ldi	r24, 0x08	; 8
+ 132:	86 0f       	add	r24, r22
+ 134:	08 95       	ret
+
+00000136 <PWM_calculate_servo_16bit>:
+
+uint16_t PWM_calculate_servo_16bit(uint8_t value) {
+	// Asegurar que el valor está en rango 0-255
+	value = constrain(value, 0, 255);
+ 136:	4f ef       	ldi	r20, 0xFF	; 255
+ 138:	60 e0       	ldi	r22, 0x00	; 0
+ 13a:	0e 94 6d 00 	call	0xda	; 0xda <constrain>
+	
+	// Mapear 0-255 a 2000-10000 (para pulso de 0.5ms a 2.5ms en modo 16-bit)
+	// Fórmula: output = 2000 + (value / 255.0) * (10000 - 2000)
+	return (uint16_t)(16 + ((value * 15 + 127) / 255)); 
+ 13e:	2f e0       	ldi	r18, 0x0F	; 15
+ 140:	82 9f       	mul	r24, r18
+ 142:	c0 01       	movw	r24, r0
+ 144:	11 24       	eor	r1, r1
+ 146:	81 58       	subi	r24, 0x81	; 129
+ 148:	9f 4f       	sbci	r25, 0xFF	; 255
+ 14a:	6f ef       	ldi	r22, 0xFF	; 255
+ 14c:	70 e0       	ldi	r23, 0x00	; 0
+ 14e:	0e 94 02 02 	call	0x404	; 0x404 <__divmodhi4>
+}
+ 152:	cb 01       	movw	r24, r22
+ 154:	40 96       	adiw	r24, 0x10	; 16
+ 156:	08 95       	ret
+
+00000158 <setup>:
+// NON-Interrupt subroutines
+
+
+void setup(){
+	
+	cli();
+ 158:	f8 94       	cli
+	
+	DDRC = 0b00000111; // Declarar Pines de entrada y salida.
+ 15a:	87 e0       	ldi	r24, 0x07	; 7
+ 15c:	87 b9       	out	0x07, r24	; 7
+	PORTC |= (1 << PORTC3); // Activar pull-up interno en el PB3
+ 15e:	88 b1       	in	r24, 0x08	; 8
+ 160:	88 60       	ori	r24, 0x08	; 8
+ 162:	88 b9       	out	0x08, r24	; 8
+	
+	// Configuración de interrupciones por cambios en PC3
+	
+	PCICR |= (1 << PCIE1); // Habilitar Interrupciones en Puerto C
+ 164:	e8 e6       	ldi	r30, 0x68	; 104
+ 166:	f0 e0       	ldi	r31, 0x00	; 0
+ 168:	80 81       	ld	r24, Z
+ 16a:	82 60       	ori	r24, 0x02	; 2
+ 16c:	80 83       	st	Z, r24
+	PCMSK1 |= (1 << PCINT11); // habilitar interrupciones para PC3
+ 16e:	ec e6       	ldi	r30, 0x6C	; 108
+ 170:	f0 e0       	ldi	r31, 0x00	; 0
+ 172:	80 81       	ld	r24, Z
+ 174:	88 60       	ori	r24, 0x08	; 8
+ 176:	80 83       	st	Z, r24
+	
+	
+	adc_init(); //inicializar ADC
+ 178:	0e 94 53 00 	call	0xa6	; 0xa6 <adc_init>
+	PWM_init_Timer0(); // Inicializar PWM con el timer0: 61hz-16ms
+ 17c:	0e 94 75 00 	call	0xea	; 0xea <PWM_init_Timer0>
+	PWM_init_Timer1(312); // Inicializar PWM con el timer1 50hz - 20ms
+ 180:	88 e3       	ldi	r24, 0x38	; 56
+ 182:	91 e0       	ldi	r25, 0x01	; 1
+ 184:	0e 94 7d 00 	call	0xfa	; 0xfa <PWM_init_Timer1>
+	UART_init(); // Inicializar UART: Sin paridad, 1 Bit de stop, 8 Bits de mensaje. 
+ 188:	0e 94 d0 01 	call	0x3a0	; 0x3a0 <UART_init>
+	
+	sei();
+ 18c:	78 94       	sei
+ 18e:	08 95       	ret
+
+00000190 <control_manual>:
+
+void control_manual(){
+	
+	//Funcion que controla los servos desde potenciometros
+	
+	OCR1B =	PWM_calculate_servo_16bit(	adc_read(7)	); // Funciona por medio del canal 7
+ 190:	87 e0       	ldi	r24, 0x07	; 7
+ 192:	0e 94 5a 00 	call	0xb4	; 0xb4 <adc_read>
+ 196:	0e 94 9b 00 	call	0x136	; 0x136 <PWM_calculate_servo_16bit>
+ 19a:	90 93 8b 00 	sts	0x008B, r25	; 0x80008b <__TEXT_REGION_LENGTH__+0x7f808b>
+ 19e:	80 93 8a 00 	sts	0x008A, r24	; 0x80008a <__TEXT_REGION_LENGTH__+0x7f808a>
+	OCR1A =	PWM_calculate_servo_16bit(	adc_read(6)	); // Funciona por medio del canal 6
+ 1a2:	86 e0       	ldi	r24, 0x06	; 6
+ 1a4:	0e 94 5a 00 	call	0xb4	; 0xb4 <adc_read>
+ 1a8:	0e 94 9b 00 	call	0x136	; 0x136 <PWM_calculate_servo_16bit>
+ 1ac:	90 93 89 00 	sts	0x0089, r25	; 0x800089 <__TEXT_REGION_LENGTH__+0x7f8089>
+ 1b0:	80 93 88 00 	sts	0x0088, r24	; 0x800088 <__TEXT_REGION_LENGTH__+0x7f8088>
+	
+	OCR0A = PWM_calculate_servo_8bit(	adc_read(5)	); // Funciona por medio del canal 5
+ 1b4:	85 e0       	ldi	r24, 0x05	; 5
+ 1b6:	0e 94 5a 00 	call	0xb4	; 0xb4 <adc_read>
+ 1ba:	0e 94 8c 00 	call	0x118	; 0x118 <PWM_calculate_servo_8bit>
+ 1be:	87 bd       	out	0x27, r24	; 39
+	OCR0B = PWM_calculate_servo_8bit(	adc_read(4)	); // Funciona por medio del canal 4
+ 1c0:	84 e0       	ldi	r24, 0x04	; 4
+ 1c2:	0e 94 5a 00 	call	0xb4	; 0xb4 <adc_read>
+ 1c6:	0e 94 8c 00 	call	0x118	; 0x118 <PWM_calculate_servo_8bit>
+ 1ca:	88 bd       	out	0x28, r24	; 40
+ 1cc:	08 95       	ret
+
+000001ce <guardar_posiciones>:
+	
+}
+
+void guardar_posiciones(){
+	
+	data_1 = OCR1B;
+ 1ce:	60 91 8a 00 	lds	r22, 0x008A	; 0x80008a <__TEXT_REGION_LENGTH__+0x7f808a>
+ 1d2:	70 91 8b 00 	lds	r23, 0x008B	; 0x80008b <__TEXT_REGION_LENGTH__+0x7f808b>
+ 1d6:	70 93 35 02 	sts	0x0235, r23	; 0x800235 <data_1+0x1>
+ 1da:	60 93 34 02 	sts	0x0234, r22	; 0x800234 <data_1>
+	data_2 = OCR1A;
+ 1de:	80 91 88 00 	lds	r24, 0x0088	; 0x800088 <__TEXT_REGION_LENGTH__+0x7f8088>
+ 1e2:	90 91 89 00 	lds	r25, 0x0089	; 0x800089 <__TEXT_REGION_LENGTH__+0x7f8089>
+ 1e6:	90 93 31 02 	sts	0x0231, r25	; 0x800231 <data_2+0x1>
+ 1ea:	80 93 30 02 	sts	0x0230, r24	; 0x800230 <data_2>
+	data_3 = OCR0A;
+ 1ee:	87 b5       	in	r24, 0x27	; 39
+ 1f0:	80 93 2a 02 	sts	0x022A, r24	; 0x80022a <data_3>
+	data_4 = OCR0B;
+ 1f4:	88 b5       	in	r24, 0x28	; 40
+ 1f6:	80 93 2f 02 	sts	0x022F, r24	; 0x80022f <data_4>
+	
+	
+	 eeprom_write_word((uint16_t*)ADDR_data1, data_1);
+ 1fa:	80 91 26 02 	lds	r24, 0x0226	; 0x800226 <__data_end>
+ 1fe:	90 91 27 02 	lds	r25, 0x0227	; 0x800227 <__data_end+0x1>
+ 202:	0e 94 3e 02 	call	0x47c	; 0x47c <eeprom_write_word>
+	 eeprom_write_word((uint16_t*)ADDR_data2, data_2);
+ 206:	60 91 30 02 	lds	r22, 0x0230	; 0x800230 <data_2>
+ 20a:	70 91 31 02 	lds	r23, 0x0231	; 0x800231 <data_2+0x1>
+ 20e:	80 91 04 01 	lds	r24, 0x0104	; 0x800104 <ADDR_data2>
+ 212:	90 91 05 01 	lds	r25, 0x0105	; 0x800105 <ADDR_data2+0x1>
+ 216:	0e 94 3e 02 	call	0x47c	; 0x47c <eeprom_write_word>
+	 eeprom_write_byte((uint8_t*)ADDR_data3, data_3);
+ 21a:	60 91 2a 02 	lds	r22, 0x022A	; 0x80022a <data_3>
+ 21e:	80 91 02 01 	lds	r24, 0x0102	; 0x800102 <ADDR_data3>
+ 222:	90 91 03 01 	lds	r25, 0x0103	; 0x800103 <ADDR_data3+0x1>
+ 226:	0e 94 30 02 	call	0x460	; 0x460 <eeprom_write_byte>
+	 eeprom_write_byte((uint8_t*)ADDR_data4, data_4);
+ 22a:	60 91 2f 02 	lds	r22, 0x022F	; 0x80022f <data_4>
+ 22e:	80 91 00 01 	lds	r24, 0x0100	; 0x800100 <__DATA_REGION_ORIGIN__>
+ 232:	90 91 01 01 	lds	r25, 0x0101	; 0x800101 <__DATA_REGION_ORIGIN__+0x1>
+ 236:	0e 94 30 02 	call	0x460	; 0x460 <eeprom_write_byte>
+ 23a:	08 95       	ret
+
+0000023c <ver_posiciones>:
+	
+}	
+
+void ver_posiciones(){
+ 23c:	cf 93       	push	r28
+ 23e:	df 93       	push	r29
+	
+	w_data_1 = eeprom_read_word(	(const uint16_t*)ADDR_data1	); //Leer datos
+ 240:	80 91 26 02 	lds	r24, 0x0226	; 0x800226 <__data_end>
+ 244:	90 91 27 02 	lds	r25, 0x0227	; 0x800227 <__data_end+0x1>
+ 248:	0e 94 2a 02 	call	0x454	; 0x454 <eeprom_read_word>
+ 24c:	ec 01       	movw	r28, r24
+ 24e:	90 93 2d 02 	sts	0x022D, r25	; 0x80022d <w_data_1+0x1>
+ 252:	80 93 2c 02 	sts	0x022C, r24	; 0x80022c <w_data_1>
+	w_data_2 = eeprom_read_word(	(const uint16_t*)ADDR_data2	);
+ 256:	80 91 04 01 	lds	r24, 0x0104	; 0x800104 <ADDR_data2>
+ 25a:	90 91 05 01 	lds	r25, 0x0105	; 0x800105 <ADDR_data2+0x1>
+ 25e:	0e 94 2a 02 	call	0x454	; 0x454 <eeprom_read_word>
+ 262:	90 93 33 02 	sts	0x0233, r25	; 0x800233 <w_data_2+0x1>
+ 266:	80 93 32 02 	sts	0x0232, r24	; 0x800232 <w_data_2>
+	w_data_3 = eeprom_read_word(	(const uint16_t*)ADDR_data3	);
+ 26a:	80 91 02 01 	lds	r24, 0x0102	; 0x800102 <ADDR_data3>
+ 26e:	90 91 03 01 	lds	r25, 0x0103	; 0x800103 <ADDR_data3+0x1>
+ 272:	0e 94 2a 02 	call	0x454	; 0x454 <eeprom_read_word>
+ 276:	80 93 36 02 	sts	0x0236, r24	; 0x800236 <w_data_3>
+	w_data_4 = eeprom_read_word(	(const uint16_t*)ADDR_data4	);
+ 27a:	80 91 00 01 	lds	r24, 0x0100	; 0x800100 <__DATA_REGION_ORIGIN__>
+ 27e:	90 91 01 01 	lds	r25, 0x0101	; 0x800101 <__DATA_REGION_ORIGIN__+0x1>
+ 282:	0e 94 2a 02 	call	0x454	; 0x454 <eeprom_read_word>
+ 286:	80 93 2e 02 	sts	0x022E, r24	; 0x80022e <w_data_4>
+	
+	OCR1B = w_data_1; // Ejecutar esos datos en los servos
+ 28a:	d0 93 8b 00 	sts	0x008B, r29	; 0x80008b <__TEXT_REGION_LENGTH__+0x7f808b>
+ 28e:	c0 93 8a 00 	sts	0x008A, r28	; 0x80008a <__TEXT_REGION_LENGTH__+0x7f808a>
+	OCR1A = w_data_2;
+ 292:	80 91 32 02 	lds	r24, 0x0232	; 0x800232 <w_data_2>
+ 296:	90 91 33 02 	lds	r25, 0x0233	; 0x800233 <w_data_2+0x1>
+ 29a:	90 93 89 00 	sts	0x0089, r25	; 0x800089 <__TEXT_REGION_LENGTH__+0x7f8089>
+ 29e:	80 93 88 00 	sts	0x0088, r24	; 0x800088 <__TEXT_REGION_LENGTH__+0x7f8088>
+	
+	OCR0A = w_data_3;
+ 2a2:	80 91 36 02 	lds	r24, 0x0236	; 0x800236 <w_data_3>
+ 2a6:	87 bd       	out	0x27, r24	; 39
+	OCR0B = w_data_4;
+ 2a8:	80 91 2e 02 	lds	r24, 0x022E	; 0x80022e <w_data_4>
+ 2ac:	88 bd       	out	0x28, r24	; 40
+	
+}
+ 2ae:	df 91       	pop	r29
+ 2b0:	cf 91       	pop	r28
+ 2b2:	08 95       	ret
+
+000002b4 <control_EPROM>:
+
+void control_EPROM()
+{
+	
+	
+	while (flag_control_EPROM == 0)
+ 2b4:	32 c0       	rjmp	.+100    	; 0x31a <control_EPROM+0x66>
+	
+	{
+		
+	UART_send_chain("\n MODO CONTROL POR EPROM \n");
+ 2b6:	86 e0       	ldi	r24, 0x06	; 6
+ 2b8:	91 e0       	ldi	r25, 0x01	; 1
+ 2ba:	0e 94 f5 01 	call	0x3ea	; 0x3ea <UART_send_chain>
+	UART_send_chain("Selecione opción: \n");
+ 2be:	81 e2       	ldi	r24, 0x21	; 33
+ 2c0:	91 e0       	ldi	r25, 0x01	; 1
+ 2c2:	0e 94 f5 01 	call	0x3ea	; 0x3ea <UART_send_chain>
+	UART_send_chain(" GUARDAR POSICIONES: 1 \n");
+ 2c6:	85 e3       	ldi	r24, 0x35	; 53
+ 2c8:	91 e0       	ldi	r25, 0x01	; 1
+ 2ca:	0e 94 f5 01 	call	0x3ea	; 0x3ea <UART_send_chain>
+	UART_send_chain(" VER POSICIONES GUARDADAS: 2 \n");
+ 2ce:	8e e4       	ldi	r24, 0x4E	; 78
+ 2d0:	91 e0       	ldi	r25, 0x01	; 1
+ 2d2:	0e 94 f5 01 	call	0x3ea	; 0x3ea <UART_send_chain>
+	
+	opcion = UART_receive_char();
+ 2d6:	0e 94 ec 01 	call	0x3d8	; 0x3d8 <UART_receive_char>
+ 2da:	80 93 2b 02 	sts	0x022B, r24	; 0x80022b <opcion>
+	
+	switch (opcion)
+ 2de:	81 33       	cpi	r24, 0x31	; 49
+ 2e0:	19 f0       	breq	.+6      	; 0x2e8 <control_EPROM+0x34>
+ 2e2:	82 33       	cpi	r24, 0x32	; 50
+ 2e4:	41 f0       	breq	.+16     	; 0x2f6 <control_EPROM+0x42>
+ 2e6:	0e c0       	rjmp	.+28     	; 0x304 <control_EPROM+0x50>
+		{
+		
+		case '1':
+		
+		
+		guardar_posiciones(); // Funcion que guarda posiciones
+ 2e8:	0e 94 e7 00 	call	0x1ce	; 0x1ce <guardar_posiciones>
+		UART_send_chain("1: GUARDAR POSICIONES \n");
+ 2ec:	8d e6       	ldi	r24, 0x6D	; 109
+ 2ee:	91 e0       	ldi	r25, 0x01	; 1
+ 2f0:	0e 94 f5 01 	call	0x3ea	; 0x3ea <UART_send_chain>
+		
+		
+		break;
+ 2f4:	0b c0       	rjmp	.+22     	; 0x30c <control_EPROM+0x58>
+		
+		case '2':
+		
+		ver_posiciones(); // Funcion que muestra posiciones guardadas
+ 2f6:	0e 94 1e 01 	call	0x23c	; 0x23c <ver_posiciones>
+		UART_send_chain("2: VER POSICIONES GUARDADAS \n");
+ 2fa:	85 e8       	ldi	r24, 0x85	; 133
+ 2fc:	91 e0       	ldi	r25, 0x01	; 1
+ 2fe:	0e 94 f5 01 	call	0x3ea	; 0x3ea <UART_send_chain>
+		break;
+ 302:	04 c0       	rjmp	.+8      	; 0x30c <control_EPROM+0x58>
+		
+		
+		default:
+		UART_send_chain(" Por default verá la opcion 2 y puede seguir al siguiente modo \n");
+ 304:	83 ea       	ldi	r24, 0xA3	; 163
+ 306:	91 e0       	ldi	r25, 0x01	; 1
+ 308:	0e 94 f5 01 	call	0x3ea	; 0x3ea <UART_send_chain>
+		 
+		
+		}
+		
+		UART_send_chain("Para volver a ver las opciones, presione tres veces el boton. \n ");
+ 30c:	84 ee       	ldi	r24, 0xE4	; 228
+ 30e:	91 e0       	ldi	r25, 0x01	; 1
+ 310:	0e 94 f5 01 	call	0x3ea	; 0x3ea <UART_send_chain>
+		flag_control_EPROM = 1;	 //Apagar menu
+ 314:	81 e0       	ldi	r24, 0x01	; 1
+ 316:	80 93 28 02 	sts	0x0228, r24	; 0x800228 <flag_control_EPROM>
+
+void control_EPROM()
+{
+	
+	
+	while (flag_control_EPROM == 0)
+ 31a:	80 91 28 02 	lds	r24, 0x0228	; 0x800228 <flag_control_EPROM>
+ 31e:	88 23       	and	r24, r24
+ 320:	51 f2       	breq	.-108    	; 0x2b6 <control_EPROM+0x2>
+		UART_send_chain("Para volver a ver las opciones, presione tres veces el boton. \n ");
+		flag_control_EPROM = 1;	 //Apagar menu
+		
+	}
+	
+}
+ 322:	08 95       	ret
+
+00000324 <modo>:
+void modo()
+{
+	
+
+	
+	switch (contador_modo)
+ 324:	80 91 29 02 	lds	r24, 0x0229	; 0x800229 <contador_modo>
+ 328:	81 30       	cpi	r24, 0x01	; 1
+ 32a:	79 f0       	breq	.+30     	; 0x34a <modo+0x26>
+ 32c:	18 f0       	brcs	.+6      	; 0x334 <modo+0x10>
+ 32e:	82 30       	cpi	r24, 0x02	; 2
+ 330:	a9 f0       	breq	.+42     	; 0x35c <modo+0x38>
+ 332:	1b c0       	rjmp	.+54     	; 0x36a <modo+0x46>
+		{
+		
+		case 0:
+		PORTC |= (1 << 0);
+ 334:	88 b1       	in	r24, 0x08	; 8
+ 336:	81 60       	ori	r24, 0x01	; 1
+ 338:	88 b9       	out	0x08, r24	; 8
+		PORTC &= ~((1 << 1)|(1 << 2));
+ 33a:	88 b1       	in	r24, 0x08	; 8
+ 33c:	89 7f       	andi	r24, 0xF9	; 249
+ 33e:	88 b9       	out	0x08, r24	; 8
+		
+		control_manual();
+ 340:	0e 94 c8 00 	call	0x190	; 0x190 <control_manual>
+		flag_control_EPROM = 0; //Encender menu de control_EPROM
+ 344:	10 92 28 02 	sts	0x0228, r1	; 0x800228 <flag_control_EPROM>
+		
+		break;
+ 348:	08 95       	ret
+		
+		case 1:
+		PORTC |= (1 << 1);
+ 34a:	88 b1       	in	r24, 0x08	; 8
+ 34c:	82 60       	ori	r24, 0x02	; 2
+ 34e:	88 b9       	out	0x08, r24	; 8
+		PORTC &= ~((1 << 0)|(1 << 2));
+ 350:	88 b1       	in	r24, 0x08	; 8
+ 352:	8a 7f       	andi	r24, 0xFA	; 250
+ 354:	88 b9       	out	0x08, r24	; 8
+		
+		
+		control_EPROM();
+ 356:	0e 94 5a 01 	call	0x2b4	; 0x2b4 <control_EPROM>
+		
+		break;
+ 35a:	08 95       	ret
+		
+		case 2:
+		PORTC |= (1 << 2);
+ 35c:	88 b1       	in	r24, 0x08	; 8
+ 35e:	84 60       	ori	r24, 0x04	; 4
+ 360:	88 b9       	out	0x08, r24	; 8
+		PORTC &= ~((1 << 0)|(1 << 1));
+ 362:	88 b1       	in	r24, 0x08	; 8
+ 364:	8c 7f       	andi	r24, 0xFC	; 252
+ 366:	88 b9       	out	0x08, r24	; 8
+		
+		
+		break;
+ 368:	08 95       	ret
+		
+		default:
+		
+		contador_modo = 0;
+ 36a:	10 92 29 02 	sts	0x0229, r1	; 0x800229 <contador_modo>
+ 36e:	08 95       	ret
+
+00000370 <main>:
+// Main Function
+
+int main(void)
+{
+	
+	setup();
+ 370:	0e 94 ac 00 	call	0x158	; 0x158 <setup>
+	
+	while (1)
+	{
+		
+		
+		modo();
+ 374:	0e 94 92 01 	call	0x324	; 0x324 <modo>
+ 378:	fd cf       	rjmp	.-6      	; 0x374 <main+0x4>
+
+0000037a <__vector_4>:
+}
+
+/****************************************/
+// Interrupt routines
+
+ISR(PCINT1_vect){
+ 37a:	1f 92       	push	r1
+ 37c:	0f 92       	push	r0
+ 37e:	0f b6       	in	r0, 0x3f	; 63
+ 380:	0f 92       	push	r0
+ 382:	11 24       	eor	r1, r1
+ 384:	8f 93       	push	r24
+	
+	
+	
+	
+	if (	!(PINC & (1 << 3))	)
+ 386:	33 99       	sbic	0x06, 3	; 6
+ 388:	05 c0       	rjmp	.+10     	; 0x394 <__vector_4+0x1a>
+	{
+		contador_modo++; //Cuando se presione el boton, cambiar de modo
+ 38a:	80 91 29 02 	lds	r24, 0x0229	; 0x800229 <contador_modo>
+ 38e:	8f 5f       	subi	r24, 0xFF	; 255
+ 390:	80 93 29 02 	sts	0x0229, r24	; 0x800229 <contador_modo>
+	}
+	
+	
+ 394:	8f 91       	pop	r24
+ 396:	0f 90       	pop	r0
+ 398:	0f be       	out	0x3f, r0	; 63
+ 39a:	0f 90       	pop	r0
+ 39c:	1f 90       	pop	r1
+ 39e:	18 95       	reti
+
+000003a0 <UART_init>:
+
+void UART_init(void){
+	
+	//Paso 1: configurar PD0 como entrada y PD1 como salida
+	
+	DDRD |= (1 << DDD1); // Tx SALIDA
+ 3a0:	8a b1       	in	r24, 0x0a	; 10
+ 3a2:	82 60       	ori	r24, 0x02	; 2
+ 3a4:	8a b9       	out	0x0a, r24	; 10
+	DDRD &= ~(1 << DDD0); // RX ENTRADA
+ 3a6:	8a b1       	in	r24, 0x0a	; 10
+ 3a8:	8e 7f       	andi	r24, 0xFE	; 254
+ 3aa:	8a b9       	out	0x0a, r24	; 10
+	
+	
+	//Paso 2: configurar UCSR0A
+	
+	UCSR0A = 0;
+ 3ac:	10 92 c0 00 	sts	0x00C0, r1	; 0x8000c0 <__TEXT_REGION_LENGTH__+0x7f80c0>
+	
+	//Paso 3: Configurar UCSR0B: Interrupciones de RX
+	
+	UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
+ 3b0:	88 e9       	ldi	r24, 0x98	; 152
+ 3b2:	80 93 c1 00 	sts	0x00C1, r24	; 0x8000c1 <__TEXT_REGION_LENGTH__+0x7f80c1>
+	
+	// paso 4 configurar UCSR0C:  Configurar modo asincrono; desahbilitar polaridad
+	
+	UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+ 3b6:	86 e0       	ldi	r24, 0x06	; 6
+ 3b8:	80 93 c2 00 	sts	0x00C2, r24	; 0x8000c2 <__TEXT_REGION_LENGTH__+0x7f80c2>
+	// Paso 5 Habilitar interrupciones
+	
+	
+	
+	
+	UBRR0  = 103; // 103 --> implica 9600 baundrys si el reloj funciona a 16Mhz.
+ 3bc:	87 e6       	ldi	r24, 0x67	; 103
+ 3be:	90 e0       	ldi	r25, 0x00	; 0
+ 3c0:	90 93 c5 00 	sts	0x00C5, r25	; 0x8000c5 <__TEXT_REGION_LENGTH__+0x7f80c5>
+ 3c4:	80 93 c4 00 	sts	0x00C4, r24	; 0x8000c4 <__TEXT_REGION_LENGTH__+0x7f80c4>
+ 3c8:	08 95       	ret
+
+000003ca <UART_send_char>:
+
+void UART_send_char(char caracter){
+	
+	//Función que envia un caracter a la computadora
+	
+	while (!(UCSR0A & (1 << UDRE0))); //Esperar hasta que la transmición termine
+ 3ca:	90 91 c0 00 	lds	r25, 0x00C0	; 0x8000c0 <__TEXT_REGION_LENGTH__+0x7f80c0>
+ 3ce:	95 ff       	sbrs	r25, 5
+ 3d0:	fc cf       	rjmp	.-8      	; 0x3ca <UART_send_char>
+	
+	UDR0 = caracter ; // Cargar el caracter a enviar.
+ 3d2:	80 93 c6 00 	sts	0x00C6, r24	; 0x8000c6 <__TEXT_REGION_LENGTH__+0x7f80c6>
+ 3d6:	08 95       	ret
+
+000003d8 <UART_receive_char>:
+}
+
+
+char UART_receive_char (void){
+	
+	cli();  // Desabilitar interrupciones
+ 3d8:	f8 94       	cli
+	while (!(UCSR0A & (1 << RXC0))); // Esperar a que termine la transmición/recepción
+ 3da:	80 91 c0 00 	lds	r24, 0x00C0	; 0x8000c0 <__TEXT_REGION_LENGTH__+0x7f80c0>
+ 3de:	88 23       	and	r24, r24
+ 3e0:	e4 f7       	brge	.-8      	; 0x3da <UART_receive_char+0x2>
+	
+	
+	sei(); // habilitar interrupciones
+ 3e2:	78 94       	sei
+	return UDR0; // Devolver el dato recibido :)
+ 3e4:	80 91 c6 00 	lds	r24, 0x00C6	; 0x8000c6 <__TEXT_REGION_LENGTH__+0x7f80c6>
+}
+ 3e8:	08 95       	ret
+
+000003ea <UART_send_chain>:
+
+
+void UART_send_chain (char* chain){
+ 3ea:	cf 93       	push	r28
+ 3ec:	df 93       	push	r29
+ 3ee:	ec 01       	movw	r28, r24
+	
+	//Recorrer toda la cadena. Se detiene hasta encontrar el caracter nulo
+	
+	for (; *chain; chain++) {
+ 3f0:	03 c0       	rjmp	.+6      	; 0x3f8 <UART_send_chain+0xe>
+		UART_send_char(*chain);
+ 3f2:	0e 94 e5 01 	call	0x3ca	; 0x3ca <UART_send_char>
+
+void UART_send_chain (char* chain){
+	
+	//Recorrer toda la cadena. Se detiene hasta encontrar el caracter nulo
+	
+	for (; *chain; chain++) {
+ 3f6:	21 96       	adiw	r28, 0x01	; 1
+ 3f8:	88 81       	ld	r24, Y
+ 3fa:	81 11       	cpse	r24, r1
+ 3fc:	fa cf       	rjmp	.-12     	; 0x3f2 <UART_send_chain+0x8>
+		UART_send_char(*chain);
+		
+	}
+ 3fe:	df 91       	pop	r29
+ 400:	cf 91       	pop	r28
+ 402:	08 95       	ret
+
+00000404 <__divmodhi4>:
+ 404:	97 fb       	bst	r25, 7
+ 406:	07 2e       	mov	r0, r23
+ 408:	16 f4       	brtc	.+4      	; 0x40e <__divmodhi4+0xa>
+ 40a:	00 94       	com	r0
+ 40c:	07 d0       	rcall	.+14     	; 0x41c <__divmodhi4_neg1>
+ 40e:	77 fd       	sbrc	r23, 7
+ 410:	09 d0       	rcall	.+18     	; 0x424 <__divmodhi4_neg2>
+ 412:	0e 94 16 02 	call	0x42c	; 0x42c <__udivmodhi4>
+ 416:	07 fc       	sbrc	r0, 7
+ 418:	05 d0       	rcall	.+10     	; 0x424 <__divmodhi4_neg2>
+ 41a:	3e f4       	brtc	.+14     	; 0x42a <__divmodhi4_exit>
+
+0000041c <__divmodhi4_neg1>:
+ 41c:	90 95       	com	r25
+ 41e:	81 95       	neg	r24
+ 420:	9f 4f       	sbci	r25, 0xFF	; 255
+ 422:	08 95       	ret
+
+00000424 <__divmodhi4_neg2>:
+ 424:	70 95       	com	r23
+ 426:	61 95       	neg	r22
+ 428:	7f 4f       	sbci	r23, 0xFF	; 255
+
+0000042a <__divmodhi4_exit>:
+ 42a:	08 95       	ret
+
+0000042c <__udivmodhi4>:
+ 42c:	aa 1b       	sub	r26, r26
+ 42e:	bb 1b       	sub	r27, r27
+ 430:	51 e1       	ldi	r21, 0x11	; 17
+ 432:	07 c0       	rjmp	.+14     	; 0x442 <__udivmodhi4_ep>
+
+00000434 <__udivmodhi4_loop>:
+ 434:	aa 1f       	adc	r26, r26
+ 436:	bb 1f       	adc	r27, r27
+ 438:	a6 17       	cp	r26, r22
+ 43a:	b7 07       	cpc	r27, r23
+ 43c:	10 f0       	brcs	.+4      	; 0x442 <__udivmodhi4_ep>
+ 43e:	a6 1b       	sub	r26, r22
+ 440:	b7 0b       	sbc	r27, r23
+
+00000442 <__udivmodhi4_ep>:
+ 442:	88 1f       	adc	r24, r24
+ 444:	99 1f       	adc	r25, r25
+ 446:	5a 95       	dec	r21
+ 448:	a9 f7       	brne	.-22     	; 0x434 <__udivmodhi4_loop>
+ 44a:	80 95       	com	r24
+ 44c:	90 95       	com	r25
+ 44e:	bc 01       	movw	r22, r24
+ 450:	cd 01       	movw	r24, r26
+ 452:	08 95       	ret
+
+00000454 <eeprom_read_word>:
+ 454:	a8 e1       	ldi	r26, 0x18	; 24
+ 456:	b0 e0       	ldi	r27, 0x00	; 0
+ 458:	42 e0       	ldi	r20, 0x02	; 2
+ 45a:	50 e0       	ldi	r21, 0x00	; 0
+ 45c:	0c 94 45 02 	jmp	0x48a	; 0x48a <eeprom_read_blraw>
+
+00000460 <eeprom_write_byte>:
+ 460:	26 2f       	mov	r18, r22
+
+00000462 <eeprom_write_r18>:
+ 462:	f9 99       	sbic	0x1f, 1	; 31
+ 464:	fe cf       	rjmp	.-4      	; 0x462 <eeprom_write_r18>
+ 466:	1f ba       	out	0x1f, r1	; 31
+ 468:	92 bd       	out	0x22, r25	; 34
+ 46a:	81 bd       	out	0x21, r24	; 33
+ 46c:	20 bd       	out	0x20, r18	; 32
+ 46e:	0f b6       	in	r0, 0x3f	; 63
+ 470:	f8 94       	cli
+ 472:	fa 9a       	sbi	0x1f, 2	; 31
+ 474:	f9 9a       	sbi	0x1f, 1	; 31
+ 476:	0f be       	out	0x3f, r0	; 63
+ 478:	01 96       	adiw	r24, 0x01	; 1
+ 47a:	08 95       	ret
+
+0000047c <eeprom_write_word>:
+ 47c:	0e 94 30 02 	call	0x460	; 0x460 <eeprom_write_byte>
+ 480:	27 2f       	mov	r18, r23
+ 482:	0c 94 31 02 	jmp	0x462	; 0x462 <eeprom_write_r18>
+
+00000486 <eeprom_read_block>:
+ 486:	dc 01       	movw	r26, r24
+ 488:	cb 01       	movw	r24, r22
+
+0000048a <eeprom_read_blraw>:
+ 48a:	fc 01       	movw	r30, r24
+ 48c:	f9 99       	sbic	0x1f, 1	; 31
+ 48e:	fe cf       	rjmp	.-4      	; 0x48c <eeprom_read_blraw+0x2>
+ 490:	06 c0       	rjmp	.+12     	; 0x49e <eeprom_read_blraw+0x14>
+ 492:	f2 bd       	out	0x22, r31	; 34
+ 494:	e1 bd       	out	0x21, r30	; 33
+ 496:	f8 9a       	sbi	0x1f, 0	; 31
+ 498:	31 96       	adiw	r30, 0x01	; 1
+ 49a:	00 b4       	in	r0, 0x20	; 32
+ 49c:	0d 92       	st	X+, r0
+ 49e:	41 50       	subi	r20, 0x01	; 1
+ 4a0:	50 40       	sbci	r21, 0x00	; 0
+ 4a2:	b8 f7       	brcc	.-18     	; 0x492 <eeprom_read_blraw+0x8>
+ 4a4:	08 95       	ret
+
+000004a6 <_exit>:
+ 4a6:	f8 94       	cli
+
+000004a8 <__stop_program>:
+ 4a8:	ff cf       	rjmp	.-2      	; 0x4a8 <__stop_program>

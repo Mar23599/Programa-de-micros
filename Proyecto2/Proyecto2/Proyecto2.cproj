@@ -12,9 +12,9 @@
     <OutputFileName>$(MSBuildProjectName)</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
-    <AssemblyName>Lab 6</AssemblyName>
-    <Name>Lab 6</Name>
-    <RootNamespace>Lab 6</RootNamespace>
+    <AssemblyName>Proyecto2</AssemblyName>
+    <Name>Proyecto2</Name>
+    <RootNamespace>Proyecto2</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
@@ -120,7 +120,19 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Libreria_ADC.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libreria_ADC.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="PWM_init.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="PWM_init.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="UART_ALE_lib.c">
