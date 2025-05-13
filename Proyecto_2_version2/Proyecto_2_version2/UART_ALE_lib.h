@@ -9,6 +9,11 @@
 #ifndef UART_ALE_LIB_H_
 #define UART_ALE_LIB_H_
 
+
+#define F_CPU 16000000UL  // 16 MHz
+#define BAUD_RATE 9600
+#define BAUD_PRESCALLER (((F_CPU / (BAUD_RATE * 16UL))) - 1)
+
 #include <avr/io.h> 
 #include <avr/interrupt.h>
 
@@ -19,6 +24,8 @@ void UART_send_char(char caracter); // Función para enviar un char
 char UART_receive_char(void); // FUnción para recibir un char
 
 void UART_send_chain (char* chain); // Función para enviar una cadena
+
+void UART_init_with_interrupts();
 
 
 #endif /* UART_ALE_LIB_H_ */

@@ -68,3 +68,15 @@ void UART_send_chain (char* chain){
 		
 	}
 }
+
+void UART_init_with_interrupts() {
+	// Configuración del baud rate
+	UBRR0H = (unsigned char)(BAUD_PRESCALLER>>8);
+	UBRR0L = (unsigned char)BAUD_PRESCALLER;
+	
+	// Habilita receptor y transmisor + interrupción por recepción
+	UCSR0B = (1<<RXEN0)|(1<<TXEN0)|(1<<RXCIE0);
+	
+	// Configura formato: 8 bits de datos, 1 bit de parada
+	UCSR0C = (1<<UCSZ01)|(1<<UCSZ00);
+}

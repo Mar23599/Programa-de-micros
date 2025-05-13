@@ -1,4 +1,6 @@
-/*
+
+	
+	/*
  * NombreProgra.c
  *
  * Created: 
@@ -12,12 +14,17 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <avr/eeprom.h>
+#include <string.h>
+
+
 
 
 
 #include "ALE_ADC_lib.h"
 #include "ALE_PWM_lib.h"
 #include "UART_ALE_lib.h"
+
+
 
 
 
@@ -40,6 +47,11 @@ uint16_t w_data_1, w_data_2;
 uint8_t w_data_3, w_data_4; // Variables que veran informacion a EPROM
 
 
+// Variables de manejo de comunicacion python - Atmega
+
+volatile uint8_t servo_data[4] = {0}; //Lista de datos con valores de servos
+volatile uint8_t eprom_data_ready = 0; // Badera para datos de EPROM
+
 /****************************************/
 // Function prototypes
 
@@ -48,13 +60,14 @@ void modo(); // Funcion que contiene los modos de funcionamiento del proyecto
 
 void control_manual(); // Funcion que maneja servos por medio de potenciometros
 void control_EPROM(); // Funcion que maneja servos por medio de posiciones guardadas en EPROM
+void control_cloud(); // Funcion que maneja servos por medio de ADAfruit
 
 
 void guardar_posiciones(); //Funcion que guarda posiciones físicas de los servos en EPROM
 void ver_posiciones(); // Funcion que ve posiciones guardadas en EPROM
 
 
-
+ 
 
 
 
@@ -62,17 +75,12 @@ void ver_posiciones(); // Funcion que ve posiciones guardadas en EPROM
 /****************************************/
 // Main Function
 
-int main(void)
-{
-	
+int main(void) {
 	setup();
 	
-	while (1)
-	{
-		
+	while(1) {
 		
 		modo();
-		
 		
 	}
 }
@@ -97,7 +105,10 @@ void setup(){
 	adc_init(); //inicializar ADC
 	PWM_init_Timer0(); // Inicializar PWM con el timer0: 61hz-16ms
 	PWM_init_Timer1(312); // Inicializar PWM con el timer1 50hz - 20ms
-	UART_init(); // Inicializar UART: Sin paridad, 1 Bit de stop, 8 Bits de mensaje. 
+	
+	// Inicializacion del UART
+	
+	 UART_init_with_interrupts();
 	
 	sei();
 	
@@ -117,7 +128,7 @@ void modo()
 		PORTC &= ~((1 << 1)|(1 << 2));
 		
 		control_manual();
-		flag_control_EPROM = 0; //Encender menu de control_EPROM
+		
 		
 		break;
 		
@@ -134,6 +145,8 @@ void modo()
 		PORTC |= (1 << 2);
 		PORTC &= ~((1 << 0)|(1 << 1));
 		
+		
+		control_cloud();
 		
 		break;
 		
@@ -164,16 +177,7 @@ void control_EPROM()
 {
 	
 	
-	while (flag_control_EPROM == 0)
 	
-	{
-		
-	UART_send_chain("\n MODO CONTROL POR EPROM \n");
-	UART_send_chain("Selecione opción: \n");
-	UART_send_chain(" GUARDAR POSICIONES: 1 \n");
-	UART_send_chain(" VER POSICIONES GUARDADAS: 2 \n");
-	
-	opcion = UART_receive_char();
 	
 	switch (opcion)
 		{
@@ -182,7 +186,6 @@ void control_EPROM()
 		
 		
 		guardar_posiciones(); // Funcion que guarda posiciones
-		UART_send_chain("1: GUARDAR POSICIONES \n");
 		
 		
 		break;
@@ -190,20 +193,18 @@ void control_EPROM()
 		case '2':
 		
 		ver_posiciones(); // Funcion que muestra posiciones guardadas
-		UART_send_chain("2: VER POSICIONES GUARDADAS \n");
+		
 		break;
 		
 		
-		default:
-		UART_send_chain(" Por default verá la opcion 2 y puede seguir al siguiente modo \n");
+		//default:
 		 
 		
 		}
 		
-		UART_send_chain("Para volver a ver las opciones, presione tres veces el boton. \n ");
-		flag_control_EPROM = 1;	 //Apagar menu
+	
 		
-	}
+	
 	
 }
 
@@ -237,6 +238,19 @@ void ver_posiciones(){
 	
 }
 
+
+void control_cloud(){
+	
+	OCR1B = PWM_calculate_servo_16bit(	servo_data[0]	);// Ejecutar datos desde la nube
+	OCR1A = PWM_calculate_servo_16bit(	servo_data[1]	);
+	
+	OCR0A = PWM_calculate_servo_8bit(	servo_data[2]	);
+	OCR0B = PWM_calculate_servo_8bit(	servo_data[3]	);
+	
+	
+}
+
+
 /****************************************/
 // Interrupt routines
 
@@ -252,3 +266,66 @@ ISR(PCINT1_vect){
 	
 	
 }
+
+ISR(USART_RX_vect){
+	
+	
+	
+	static char rx_msg[8]; // Buffer para mensaje
+	static uint8_t msg_pos = 0;
+	static uint8_t expecting_value = 0;
+	static uint8_t target_servo = 0;
+	
+	char c = UDR0; // Leer dato recibido
+
+	// Protección contra desbordamiento
+	if(msg_pos >= sizeof(rx_msg)-1) {
+		msg_pos = 0;
+		expecting_value = 0;
+		return;
+	}
+	
+	if (contador_modo == 1) { // Modo EPROM
+		if (msg_pos < 3) {
+			rx_msg[msg_pos++] = c;
+			rx_msg[msg_pos] = '\0';
+			
+			// Verificar si es "EP:"
+			if (msg_pos == 3 && strncmp(rx_msg, "EP:", 3) == 0) {
+				expecting_value = 1;
+				} else if (msg_pos == 3) {
+				msg_pos = 0; // Reset si no coincide
+			}
+		}
+		else if (expecting_value) {
+			opcion = c; // Guarda el caracter directamente
+			eprom_data_ready = 1;
+			msg_pos = 0;
+			expecting_value = 0;
+		}
+	}
+	else if (contador_modo == 2) { // Modo Servos
+		if (msg_pos < 3) {
+			rx_msg[msg_pos++] = c;
+			rx_msg[msg_pos] = '\0';
+			
+			// Verificar si es "S1:", "S2:", etc.
+			if (msg_pos == 3 && rx_msg[0] == 'S' &&
+			(rx_msg[1] >= '1' && rx_msg[1] <= '4') &&
+			rx_msg[2] == ':') {
+				target_servo = rx_msg[1] - '1'; // Convertir a índice 0-3
+				expecting_value = 1;
+				} else if (msg_pos == 3) {
+				msg_pos = 0; // Reset si no coincide
+			}
+		}
+		else if (expecting_value) {
+			servo_data[target_servo] = (uint8_t)c;
+			msg_pos = 0;
+			expecting_value = 0;
+		}
+	}
+	
+	
+}
+

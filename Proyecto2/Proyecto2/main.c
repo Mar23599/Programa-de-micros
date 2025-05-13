@@ -180,27 +180,15 @@ void modo_munual(){
 void EPROM_mode(){
 	
 	
-		while(flag_menu_EPROM == 0){
-			
-			//Desplegar menu
-			UART_send_chain(" \n -----MODO EPROM----- \n");
-			UART_send_chain("Seleccione una opción: \n");
-			UART_send_chain("GUARDAR POSICIONES: 1\n");
-			UART_send_chain("VER POSICIONES GUARDADAS: 2\n");
-			
-			flag_menu_EPROM = 1; //Apagar menu
-		}
-		
-		menu_opcion = UART_receive_char();
 		
 		switch (menu_opcion){
 			
 			case '1':
-			UART_send_chain("OPCION 1 \n");
+			
 			break;
 			
 			case '2':
-			UART_send_chain("OPCION 2 \n");
+			
 			break;
 			
 			default:
