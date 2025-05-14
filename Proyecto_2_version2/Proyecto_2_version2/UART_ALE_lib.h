@@ -27,5 +27,8 @@ void UART_send_chain (char* chain); // Función para enviar una cadena
 
 void UART_init_with_interrupts();
 
+void UART_sendString(const char* str);
+
+
 
 #endif /* UART_ALE_LIB_H_ */

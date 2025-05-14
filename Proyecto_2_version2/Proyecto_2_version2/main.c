@@ -33,7 +33,7 @@ uint8_t contador_modo = 0;
 
 //Variables de control_EPROM();
 
-char opcion; // Variable que guarda la opcion del usuario
+uint8_t opcion; // Variable que guarda la opcion del usuario
 uint8_t flag_control_EPROM = 0;
 uint16_t data_1, data_2;
 uint8_t data_3, data_4; // Variables que moveran informacion a EPROM
@@ -68,6 +68,7 @@ void ver_posiciones(); // Funcion que ve posiciones guardadas en EPROM
 
 
  
+ void UART_putstring(char* str);
 
 
 
@@ -182,7 +183,7 @@ void control_EPROM()
 	switch (opcion)
 		{
 		
-		case '1':
+		case 1:
 		
 		
 		guardar_posiciones(); // Funcion que guarda posiciones
@@ -190,14 +191,17 @@ void control_EPROM()
 		
 		break;
 		
-		case '2':
+		case 2:
 		
 		ver_posiciones(); // Funcion que muestra posiciones guardadas
 		
 		break;
 		
 		
-		//default:
+		default:
+		
+		opcion = 0;
+		
 		 
 		
 		}
@@ -250,6 +254,21 @@ void control_cloud(){
 	
 }
 
+void UART_putstring(char* str) {
+	if (!str) return; // Verificación de puntero nulo
+	
+	while (*str != '\0') {
+		/* Esperar a que el buffer de transmisión esté vacío */
+		while (!(UCSR0A & (1 << UDRE0))) {
+			// Puedes agregar un timeout aquí si es necesario
+		};
+		
+		/* Poner el dato en el buffer y enviar */
+		UDR0 = *str;
+		str++;
+	}
+}
+
 
 /****************************************/
 // Interrupt routines
@@ -267,65 +286,71 @@ ISR(PCINT1_vect){
 	
 }
 
-ISR(USART_RX_vect){
-	
-	
-	
-	static char rx_msg[8]; // Buffer para mensaje
-	static uint8_t msg_pos = 0;
-	static uint8_t expecting_value = 0;
-	static uint8_t target_servo = 0;
-	
-	char c = UDR0; // Leer dato recibido
 
-	// Protección contra desbordamiento
-	if(msg_pos >= sizeof(rx_msg)-1) {
-		msg_pos = 0;
-		expecting_value = 0;
-		return;
-	}
+
+ISR(USART_RX_vect) {
+	static uint8_t buffer[10]; // Buffer para almacenar los datos recibidos
+	static uint8_t index = 0;  // Índice del buffer
+	static uint8_t receiving = 0; // Flag para indicar que estamos recibiendo datos
 	
-	if (contador_modo == 1) { // Modo EPROM
-		if (msg_pos < 3) {
-			rx_msg[msg_pos++] = c;
-			rx_msg[msg_pos] = '\0';
-			
-			// Verificar si es "EP:"
-			if (msg_pos == 3 && strncmp(rx_msg, "EP:", 3) == 0) {
-				expecting_value = 1;
-				} else if (msg_pos == 3) {
-				msg_pos = 0; // Reset si no coincide
+	uint8_t received = UDR0; // Leer el byte recibido
+	
+	if (received == '\n' || received == '\r') {
+		// Fin de comando, procesar el buffer
+		buffer[index] = '\0'; // Terminar la cadena
+		
+		if (contador_modo == 1) {
+			// Modo 1: Esperando formato "EP:dato"
+			if (buffer[0] == 'E' && buffer[1] == 'P' && buffer[2] == ':') {
+				uint8_t value = buffer[3] - '0'; // Convertir ASCII a número
+				
+				if (value <= 2) { // Validar que sea 0, 1 o 2
+					opcion = value;
+					flag_control_EPROM = 1; // Activar flag para procesar en main
+					
+					// Opcional: enviar confirmación
+					UART_putstring("EPROM_OK\n");
+				}
 			}
 		}
-		else if (expecting_value) {
-			opcion = c; // Guarda el caracter directamente
-			eprom_data_ready = 1;
-			msg_pos = 0;
-			expecting_value = 0;
-		}
-	}
-	else if (contador_modo == 2) { // Modo Servos
-		if (msg_pos < 3) {
-			rx_msg[msg_pos++] = c;
-			rx_msg[msg_pos] = '\0';
-			
-			// Verificar si es "S1:", "S2:", etc.
-			if (msg_pos == 3 && rx_msg[0] == 'S' &&
-			(rx_msg[1] >= '1' && rx_msg[1] <= '4') &&
-			rx_msg[2] == ':') {
-				target_servo = rx_msg[1] - '1'; // Convertir a índice 0-3
-				expecting_value = 1;
-				} else if (msg_pos == 3) {
-				msg_pos = 0; // Reset si no coincide
+		else if (contador_modo == 2) {
+			// Modo 2: Esperando formato "Sn:dato"
+			if (buffer[0] == 'S' && buffer[2] == ':') {
+				uint8_t servo_num = buffer[1] - '0'; // Obtener número de servo
+				
+				if (servo_num >= 1 && servo_num <= 4) {
+					uint8_t value = 0;
+					uint8_t i = 3;
+					
+					// Convertir los dígitos ASCII a número
+					while (buffer[i] >= '0' && buffer[i] <= '9') {
+						value = value * 10 + (buffer[i] - '0');
+						i++;
+					}
+					
+					if (value <= 255) { // Asegurar que es un uint8_t válido
+						servo_data[servo_num - 1] = value;
+						
+						// Opcional: enviar confirmación
+						char confirm[20];
+						sprintf(confirm, "S%d_OK\n", servo_num);
+						UART_putstring(confirm);
+					}
+				}
 			}
 		}
-		else if (expecting_value) {
-			servo_data[target_servo] = (uint8_t)c;
-			msg_pos = 0;
-			expecting_value = 0;
+		
+		// Reiniciar para el próximo comando
+		index = 0;
+		receiving = 0;
+	}
+	else {
+		// Almacenar el byte en el buffer si hay espacio
+		if (index < sizeof(buffer) - 1) {
+			buffer[index++] = received;
+			} else {
+			// Buffer lleno, descartar datos
+			index = 0;
 		}
 	}
-	
-	
 }
-

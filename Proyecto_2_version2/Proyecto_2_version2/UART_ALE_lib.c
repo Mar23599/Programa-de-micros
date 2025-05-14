@@ -80,3 +80,10 @@ void UART_init_with_interrupts() {
 	// Configura formato: 8 bits de datos, 1 bit de parada
 	UCSR0C = (1<<UCSZ01)|(1<<UCSZ00);
 }
+
+void UART_sendString(const char* str) {
+	while (*str) {
+		while (!(UCSR0A & (1<<UDRE0))); // Espera buffer vacío
+		UDR0 = *str++;
+	}
+}
