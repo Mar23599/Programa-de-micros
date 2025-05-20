@@ -89,3 +89,78 @@ client.loop_background()
 while True:
     print('Running "main loop"')
     time.sleep(3)
+
+
+
+
+
+
+ISR(USART_RX_vect) {
+	static uint8_t buffer[10]; // Buffer para almacenar los datos recibidos
+	static uint8_t index = 0;  // Índice del buffer
+	static uint8_t receiving = 0; // Flag para indicar que estamos recibiendo datos
+	
+	uint8_t received = UDR0; // Leer el byte recibido
+	
+	if (received == '\n' || received == '\r') {
+		// Fin de comando, procesar el buffer
+		buffer[index] = '\0'; // Terminar la cadena
+		
+		if (contador_modo == 1) {
+			// Modo 1: Esperando EXACTAMENTE el formato "EP:d" donde d es 0, 1 o 2
+			if (index == 4 && // Longitud exacta del comando
+			buffer[0] == 'E' &&
+			buffer[1] == 'P' &&
+			buffer[2] == ':' &&
+			buffer[3] >= '0' &&
+			buffer[3] <= '2') {
+				
+				opcion = buffer[3] - '0'; // Convertir ASCII a número (0-2)
+				flag_control_EPROM = 1; // Activar flag para procesar en main
+				
+				// Enviar confirmación
+				UART_putstring("EPROM_OK\n");
+			}
+			// Cualquier otro comando en modo 1 será ignorado
+		}
+		else if (contador_modo == 2) {
+			// Modo 2: Esperando formato "Sn:dato" (MANTENIDO SIN CAMBIOS)
+			if (buffer[0] == 'S' && buffer[2] == ':') {
+				uint8_t servo_num = buffer[1] - '0'; // Obtener número de servo
+				
+				if (servo_num >= 1 && servo_num <= 4) {
+					uint8_t value = 0;
+					uint8_t i = 3;
+					
+					// Convertir los dígitos ASCII a número
+					while (buffer[i] >= '0' && buffer[i] <= '9') {
+						value = value * 10 + (buffer[i] - '0');
+						i++;
+					}
+					
+					if (value <= 255) { // Asegurar que es un uint8_t válido
+						servo_data[servo_num - 1] = value;
+						
+						// Opcional: enviar confirmación
+						char confirm[20];
+						sprintf(confirm, "S%d_OK\n", servo_num);
+						UART_putstring(confirm);
+					}
+				}
+			}
+		}
+		
+		// Reiniciar para el próximo comando
+		index = 0;
+		receiving = 0;
+	}
+	else {
+		// Almacenar el byte en el buffer si hay espacio
+		if (index < sizeof(buffer) - 1) {
+			buffer[index++] = received;
+			} else {
+			// Buffer lleno, descartar datos
+			index = 0;
+		}
+	}
+}

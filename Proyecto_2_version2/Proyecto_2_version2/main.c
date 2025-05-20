@@ -176,70 +176,67 @@ void control_manual(){
 
 void control_EPROM()
 {
-	
-	
-	
-	
-	switch (opcion)
+	if(flag_control_EPROM) // Solo ejecutar si hay un comando nuevo
+	{
+		switch(opcion)
 		{
-		
-		case 1:
-		
-		
-		guardar_posiciones(); // Funcion que guarda posiciones
-		
-		
-		break;
-		
-		case 2:
-		
-		ver_posiciones(); // Funcion que muestra posiciones guardadas
-		
-		break;
-		
-		
-		default:
-		
-		opcion = 0;
-		
-		 
-		
+			case 1: // Guardar posiciones
+			guardar_posiciones();
+			break;
+			
+			case 2: // Leer posiciones
+			ver_posiciones();
+			break;
+			
+			default:
+			opcion = 0;
+			break;
 		}
-		
-	
-		
-	
-	
+		flag_control_EPROM = 0; // Resetear el flag después de procesar
+	}
 }
 
 void guardar_posiciones(){
-	
+	// Primero leer los valores actuales
 	data_1 = OCR1B;
 	data_2 = OCR1A;
 	data_3 = OCR0A;
 	data_4 = OCR0B;
 	
+	// Escribir con verificación de cambios para evitar escrituras innecesarias
+	uint16_t current1 = eeprom_read_word((const uint16_t*)ADDR_data1);
+	if(current1 != data_1) {
+		eeprom_write_word((uint16_t*)ADDR_data1, data_1);
+	}
 	
-	 eeprom_write_word((uint16_t*)ADDR_data1, data_1);
-	 eeprom_write_word((uint16_t*)ADDR_data2, data_2);
-	 eeprom_write_byte((uint8_t*)ADDR_data3, data_3);
-	 eeprom_write_byte((uint8_t*)ADDR_data4, data_4);
+	uint16_t current2 = eeprom_read_word((const uint16_t*)ADDR_data2);
+	if(current2 != data_2) {
+		eeprom_write_word((uint16_t*)ADDR_data2, data_2);
+	}
 	
-}	
+	uint8_t current3 = eeprom_read_byte((const uint8_t*)ADDR_data3);
+	if(current3 != data_3) {
+		eeprom_write_byte((uint8_t*)ADDR_data3, data_3);
+	}
+	
+	uint8_t current4 = eeprom_read_byte((const uint8_t*)ADDR_data4);
+	if(current4 != data_4) {
+		eeprom_write_byte((uint8_t*)ADDR_data4, data_4);
+	}
+}
 
 void ver_posiciones(){
+	// Leer correctamente words y bytes
+	w_data_1 = eeprom_read_word((const uint16_t*)ADDR_data1);
+	w_data_2 = eeprom_read_word((const uint16_t*)ADDR_data2);
+	w_data_3 = eeprom_read_byte((const uint8_t*)ADDR_data3); // Cambiado a read_byte
+	w_data_4 = eeprom_read_byte((const uint8_t*)ADDR_data4); // Cambiado a read_byte
 	
-	w_data_1 = eeprom_read_word(	(const uint16_t*)ADDR_data1	); //Leer datos
-	w_data_2 = eeprom_read_word(	(const uint16_t*)ADDR_data2	);
-	w_data_3 = eeprom_read_word(	(const uint16_t*)ADDR_data3	);
-	w_data_4 = eeprom_read_word(	(const uint16_t*)ADDR_data4	);
-	
-	OCR1B = w_data_1; // Ejecutar esos datos en los servos
+	// Aplicar los valores a los servos
+	OCR1B = w_data_1;
 	OCR1A = w_data_2;
-	
 	OCR0A = w_data_3;
 	OCR0B = w_data_4;
-	
 }
 
 
@@ -300,21 +297,24 @@ ISR(USART_RX_vect) {
 		buffer[index] = '\0'; // Terminar la cadena
 		
 		if (contador_modo == 1) {
-			// Modo 1: Esperando formato "EP:dato"
-			if (buffer[0] == 'E' && buffer[1] == 'P' && buffer[2] == ':') {
-				uint8_t value = buffer[3] - '0'; // Convertir ASCII a número
+			// Modo 1: Esperando EXACTAMENTE el formato "EP:d" donde d es 0, 1 o 2
+			if (index == 4 && // Longitud exacta del comando
+			buffer[0] == 'E' &&
+			buffer[1] == 'P' &&
+			buffer[2] == ':' &&
+			buffer[3] >= '0' &&
+			buffer[3] <= '2') {
 				
-				if (value <= 2) { // Validar que sea 0, 1 o 2
-					opcion = value;
-					flag_control_EPROM = 1; // Activar flag para procesar en main
-					
-					// Opcional: enviar confirmación
-					UART_putstring("EPROM_OK\n");
-				}
+				opcion = buffer[3] - '0'; // Convertir ASCII a número (0-2)
+				flag_control_EPROM = 1; // Activar flag para procesar en main
+				
+				// Enviar confirmación
+				UART_putstring("EPROM_OK\n");
 			}
+			// Cualquier otro comando en modo 1 será ignorado
 		}
 		else if (contador_modo == 2) {
-			// Modo 2: Esperando formato "Sn:dato"
+			// Modo 2: Esperando formato "Sn:dato" (MANTENIDO SIN CAMBIOS)
 			if (buffer[0] == 'S' && buffer[2] == ':') {
 				uint8_t servo_num = buffer[1] - '0'; // Obtener número de servo
 				
