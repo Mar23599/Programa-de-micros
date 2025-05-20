@@ -95,7 +95,7 @@ void setup(){
 	cli();
 	
 	DDRC = 0b00000111; // Declarar Pines de entrada y salida.
-	PORTC |= (1 << PORTC3); // Activar pull-up interno en el PB3
+	PORTC |= (1 << PORTC3); // Activar pull-up interno en el PC3
 	
 	// Configuración de interrupciones por cambios en PC3
 	
